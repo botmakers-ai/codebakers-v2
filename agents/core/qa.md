@@ -444,6 +444,40 @@ Before declaring QA work complete:
 - [ ] Mocks are clean (no real API calls in unit/integration tests)
 - [ ] Test names follow `should [behavior] when [condition]` convention
 
+## QA Gate (Runs After Every Checkpoint)
+
+Before proceeding past any checkpoint, the conductor runs this gate automatically. All items must pass. If any fail — stop, fix, re-run gate, then continue.
+
+```bash
+# 1. Audit ALL API routes for createAdminClient() — replace with createClient()
+grep -rn "createAdminClient" --include="*.ts" --include="*.tsx" src/
+
+# 2. Check every form submission has input validation (zod schema required)
+grep -rn "action=" --include="*.tsx" src/ | grep -v "zod\|schema\|validate"
+
+# 3. Verify no console.log in production code
+grep -rn "console\.log" --include="*.ts" --include="*.tsx" src/
+
+# 4. Count TypeScript 'any' usage — target: 0
+grep -rn "\bany\b" --include="*.ts" --include="*.tsx" src/ | wc -l
+
+# 5. Check all UI components have loading + error states
+grep -rn "isLoading\|isPending\|isError\|error" --include="*.tsx" src/components/
+
+# 6. Verify no hardcoded secrets or URLs
+grep -rn "http://\|https://\|sk-\|pk_\|eyJ" --include="*.ts" --include="*.tsx" src/
+
+# 7. Test all filters actually filter (check filter functions have test coverage)
+grep -rn "filter\|search\|sort" --include="*.test.ts" --include="*.test.tsx" src/
+
+# 8. Verify all UI buttons are wired to real API routes
+grep -rn "onClick\|onSubmit" --include="*.tsx" src/ | grep -v "handler\|action\|mutation\|fetch"
+```
+
+**Gate is blocking.** The conductor does not allow moving to the next checkpoint until all 8 checks are clean.
+
+---
+
 ## Common Pitfalls
 
 1. **Testing too much implementation** — if you refactor the internals and tests break but behavior hasn't changed, your tests are too tightly coupled.
@@ -451,3 +485,45 @@ Before declaring QA work complete:
 3. **100% coverage obsession** — coverage is a signal, not a goal. 80% meaningful coverage beats 100% that tests getters and setters.
 4. **No error path tests** — the happy path works fine. What happens when the database is down? When the user submits garbage? Test those.
 5. **Stale mocks** — when the real implementation changes, mocks must change too. Regularly verify mocks match reality.
+
+---
+
+## Production Parity Testing (Required Before Every Deploy)
+
+Local dev passing is not enough. Before any production deploy, QA must verify all of these:
+
+```bash
+# 1. Wipe local database and re-sync from scratch
+# Tests: does the app work with a CLEAN database?
+# Catches: hardcoded data, missing seed scripts, sync gaps
+
+# 2. Disable local RLS bypass — test as a regular user
+# Tests: do RLS policies actually work?
+# Catches: admin client used where createClient() should be
+
+# 3. Test with a fresh account (not your dev account)
+# Tests: does onboarding/signup work end to end?
+# Catches: missing onboarding steps, first-run assumptions
+
+# 4. Test with a different org/tenant (for multi-tenant apps)
+# Tests: does tenant isolation work?
+# Catches: hardcoded tenant IDs, data leaking between orgs
+
+# 5. Check all env vars exist in production environment
+# Tests: nothing missing that works locally
+# Catches: env vars that exist locally but not in Vercel
+
+# 6. Run build in production mode locally
+pnpm build && pnpm start
+# Catches: SSR hydration issues, missing 'use client' directives
+
+# 7. Check Zustand stores for persist middleware
+grep -rn "persist(" --include="*.ts" --include="*.tsx" src/
+# Catches: localStorage-based state causing hydration mismatches
+
+# 8. Check Microsoft OAuth uses /common endpoint
+grep -rn "tenant:" --include="*.ts" src/
+# Catches: specific tenant IDs that work locally, fail in production
+```
+
+**All 8 must pass before any production deploy. No exceptions.**

@@ -319,3 +319,77 @@ Before declaring auth work complete:
 3. **OAuth redirect loops** — if the callback URL is wrong, users bounce between login and callback forever. Double-check Supabase dashboard config.
 4. **Missing onboarding after signup** — the user signs up, verifies email, and then... what? Always have a clear post-signup flow.
 5. **Invite link security** — invites should expire (24-48 hours), be single-use, and include the org context. Never reuse tokens.
+
+---
+
+## Production vs Dev Parity — Auth Specific
+
+The most common reason auth works in dev and breaks in production:
+
+| Issue | Dev Behavior | Production Behavior | Fix |
+|-------|-------------|--------------------|----|
+| NextAuth + Supabase hybrid | Works — RLS loose or admin client used | Fails — RLS blocks all queries silently | Use Supabase Auth only |
+| Microsoft specific tenant ID | Works — you test with your own account | Fails — other tenants get AADSTS50020 | Use `/common` endpoint always |
+| Zustand persist + SSR | Works — browser already has state | Fails — hydration mismatch, infinite loops | Remove persist middleware |
+| RLS disabled locally | Works — all queries succeed | Fails — queries blocked for non-admin users | Enable RLS locally, test as regular user |
+| Admin client in API routes | Works — bypasses all RLS | Works but DANGEROUS — exposes all data | Use `createClient()` for user-facing routes |
+
+**Rule: always test auth as a brand new user with a clean database before deploying.**
+
+## Anti-Patterns Added from EaseMail Production Incident
+
+### ❌ NextAuth + Supabase Hybrid (CRITICAL)
+```typescript
+// ❌ WRONG — NextAuth session + Supabase data = RLS disaster
+import { getServerSession } from 'next-auth'
+import { createClient } from '@/lib/supabase/server'
+
+export async function GET() {
+  const session = await getServerSession() // NextAuth JWT
+  const supabase = createClient()          // Supabase expects Supabase JWT
+  const { data } = await supabase.from('emails').select() // BLOCKED by RLS
+}
+
+// ✅ CORRECT — Supabase Auth end to end
+import { createClient } from '@/lib/supabase/server'
+
+export async function GET() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser() // Supabase JWT
+  const { data } = await supabase.from('emails').select()  // RLS works correctly
+}
+```
+
+### ❌ Microsoft Specific Tenant (CRITICAL)
+```typescript
+// ❌ WRONG — works for your account, fails for everyone else
+const provider = {
+  tenant: 'your-specific-tenant-id', // AADSTS50020 for other tenants
+  authorization: { params: { scope: 'openid email profile' } }
+}
+
+// ✅ CORRECT — works for any Microsoft account
+const provider = {
+  tenant: 'common', // accepts any Microsoft/Azure AD account
+  authorization: { params: { scope: 'openid email profile offline_access' } }
+}
+```
+
+### ❌ Zustand Persist in Next.js (CRITICAL)
+```typescript
+// ❌ WRONG — causes hydration mismatch in SSR
+import { persist } from 'zustand/middleware'
+
+const useStore = create(
+  persist(
+    (set) => ({ emails: [], setEmails: (e) => set({ emails: e }) }),
+    { name: 'email-storage' } // writes to localStorage — SSR has no localStorage
+  )
+)
+
+// ✅ CORRECT — no persist, use Supabase for persistence
+const useStore = create(
+  (set) => ({ emails: [], setEmails: (e) => set({ emails: e }) })
+)
+// Fetch from Supabase on mount, not from localStorage
+```

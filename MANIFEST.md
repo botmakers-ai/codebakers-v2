@@ -2,7 +2,7 @@
 
 > Complete registry of all agents, templates, and system files. The conductor reads this to route tasks and load agents.
 
-**Base URL:** `https://raw.githubusercontent.com/tdaniel1925/codebakers-system/master/`
+**Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/master/`
 
 ---
 
@@ -10,7 +10,7 @@
 
 | Metric | Count |
 |--------|-------|
-| Total Agents | 77 |
+| Total Agents | 83 |
 | Agent Tiers | 9 |
 | Code Templates | 20 |
 | Design Token Presets | 4 |
@@ -40,7 +40,13 @@ Session management, orchestration, research, review, and tooling agents. Conduct
 | 4 | API Documentation | `agents/meta/api-docs.md` | api docs, openapi, swagger, document api, api reference, endpoint docs | — |
 | 5 | Migration Assistant | `agents/meta/migration-assistant.md` | migration, migrate, legacy, existing codebase, technical debt, audit codebase | — |
 | 6 | Seed Data | `agents/meta/seed-data.md` | seed, seed data, test data, fake data, demo data, fixtures, realistic data, populate database | — |
-| 7 | Design Review | `agents/meta/design-review.md` | design review, ui review, visual feedback, accessibility check, ux review | — |
+| 7 | Reviewer | `agents/meta/reviewer.md` | review, code review, audit code, check my work, critical issues, security review, dead code | — |
+| 8 | Doctor | `agents/meta/doctor.md` | fix this, broken, not working, keeps happening, hydration error, bug won't go away, same error, diagnose, root cause, doozey, can't figure out, stuck, back and forth | — |
+| 9 | Persistence Specialist | `agents/meta/persistence.md` | save where we are, don't lose this, context is full, save progress, write down what we tried, new session, losing context, about to compact | — |
+| 10 | War Room | `agents/meta/war-room.md` | major issue, war room, open war room, multi-session bug, this is going to take a while, escalate, doctor failed, still broken after fix, can't crack this | `meta/doctor.md`, `meta/persistence.md` |
+| 12 | Pre-Launch Specialist | `agents/meta/pre-launch.md` | going live, launch, pre-launch, production ready, ready to deploy, before we launch, production checklist, ship it, going to production, is this ready | `core/auth.md`, `core/qa.md`, `core/devops.md` |
+| 13 | Audit Agent | `agents/meta/audit-agent.md` | run audit, audit this, audit codebase, generate audit report, what went wrong, analyze this app, review this codebase, audit mode | — |
+| 14 | Design Review | `agents/meta/design-review.md` | design review, ui review, visual feedback, accessibility check, ux review | — |
 | 8 | Estimation | `agents/meta/estimation.md` | estimate, timeline, effort, story points, sprint planning, scope | — |
 | 9 | Metrics | `agents/meta/metrics.md` | metrics, kpis, business metrics, performance indicators, measurement | — |
 | 10 | Monitoring Setup | `agents/meta/monitoring-setup.md` | monitoring, alerting, sentry, uptime, observability, logging setup | — |
