@@ -344,7 +344,7 @@ and what fundamentally went wrong with it.]
 
 ```bash
 # Clone the audits repo (or use if already cloned)
-AUDIT_REPO="https://github.com/botmakers/app-audits"
+AUDIT_REPO="https://github.com/botmakers-ai/app-audits"
 APP_NAME=$(cat package.json | grep '"name"' | head -1 | grep -oP '(?<=")[^"]+(?=",$)')
 AUDIT_DIR="/tmp/app-audits"
 
