@@ -2,7 +2,7 @@
 name: Completeness Verifier
 tier: meta
 triggers: completeness, verify feature, does this work, user flow check, ux complete, feature complete, flows check
-depends_on: meta/ui-smoke.md
+depends_on: agents/meta/ui-smoke.md
 conflicts_with: null
 prerequisites: "FLOWS.md must exist"
 description: Runs after every feature agent completes. Verifies the feature works for a real user going through the flow in FLOWS.md — not just that code compiles. Checks every button has feedback, every form validates, every state renders, every edge case is handled. If gaps found, generates targeted fix queue items and triggers Fix Executor.

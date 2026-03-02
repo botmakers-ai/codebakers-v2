@@ -2,7 +2,7 @@
 name: Fix Executor
 tier: meta
 triggers: fix, auto-fix, fix everything, run fixes, execute fixes, fix queue, repair, self-heal
-depends_on: meta/fix-queue-builder.md
+depends_on: agents/meta/fix-queue-builder.md
 conflicts_with: null
 prerequisites: ".codebakers/FIX-QUEUE.md must exist (run fix-queue-builder first)"
 description: Autonomous fix loop. Reads FIX-QUEUE.md, executes every fix, verifies with tsc after each, retries with error as context on failure, tries alternative paths when direct fix fails, commits each successful fix. Never stops because something is hard. Produces FIXES-APPLIED.md. The only valid output is a shorter fix queue.

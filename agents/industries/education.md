@@ -2,7 +2,7 @@
 name: Education Industry Specialist
 tier: industries
 triggers: education, lms, courses, enrollment, grading, certificates, learning management, curriculum, students, instructors, assignments, quizzes, transcripts, e-learning, continuing education, training platform, courseware, gradebook, academic
-depends_on: database.md, auth.md, billing.md, video.md
+depends_on: agents/core/database.md, agents/core/auth.md, agents/features/billing.md, agents/features/video.md
 conflicts_with: null
 prerequisites: null
 description: Education domain expertise — course catalog and curriculum management, student enrollment, assignment and quiz systems, gradebook with weighted scoring, certificate/credential issuance, LMS patterns, continuing education credits, and student/instructor portals

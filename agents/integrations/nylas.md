@@ -2,7 +2,7 @@
 name: Nylas Integration Specialist
 tier: integrations
 triggers: nylas, nylas email, nylas calendar, nylas v3, email sync nylas, nylas webhook, nylas oauth, nylas contacts
-depends_on: auth.md, backend.md, features/realtime.md
+depends_on: agents/core/auth.md, agents/core/backend.md, agents/features/realtime.md
 conflicts_with: null
 prerequisites: "Nylas v3 account, API key from https://app.nylas.com"
 description: Nylas v3 email and calendar sync — auth flow, webhook setup with polling fallback, email read/send, folder sync, token refresh, staleness detection. V3 SDK only (7.x+). Contains v2→v3 migration patterns.

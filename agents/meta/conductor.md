@@ -551,6 +551,62 @@ When user says `@rebuild`, "rebuild", "fix this app", "audit and rebuild", "resc
 
 ---
 
+## @fix Routing
+
+When user says `@fix`, "fix this", "run fixes", "execute fixes":
+
+```
+→ Check for .codebakers/FIX-QUEUE.md
+→ If missing: "🍞 CodeBakers: No fix queue found. Run @rebuild first to generate one."
+→ If exists: Load agents/meta/fix-executor.md
+→ Execute autonomous fix loop
+→ Commit each successful fix
+→ Report: fixes applied count, remaining count
+```
+
+---
+
+## @flows Routing
+
+When user says `@flows`, "show flows", "what flows", "regenerate flows":
+
+```
+→ Check for FLOWS.md
+→ If missing: "🍞 CodeBakers: FLOWS.md not found. This file is generated during @interview."
+→ If exists: Display FLOWS.md contents with status checkmarks
+→ If user says "regenerate": Re-extract from project-profile.md and BRAIN.md
+```
+
+---
+
+## @agent Routing
+
+When user says `@agent [name]`, "load [agent name]", "use [agent name]":
+
+```
+→ Parse agent name from command
+→ Search for matching agent file in agents/**/*.md
+→ If multiple matches: ask user to clarify with numbered options
+→ If single match: Load and execute that agent
+→ If no match: "🍞 CodeBakers: Agent '[name]' not found. Type @team to see all agents."
+```
+
+---
+
+## @ui Routing
+
+When user says `@ui`, "run ui research", "update ui research", "ui standards":
+
+```
+→ Load agents/meta/ui-researcher.md
+→ Execute full UI research for app type
+→ Update or create UI-RESEARCH.md
+→ If gaps found vs current implementation: add to FIX-QUEUE.md
+→ Report: design era, key patterns, gaps identified
+```
+
+---
+
 ## Communication Rules
 
 - Every system message starts with `🍞 CodeBakers:`

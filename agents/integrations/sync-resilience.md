@@ -2,7 +2,7 @@
 name: Sync Resilience Specialist
 tier: integrations
 triggers: sync resilience, sync state machine, sync recovery, webhook fallback, integration resilience, sync failure, sync degraded, sync status, delta sync, idempotent sync, sync health
-depends_on: backend.md, infrastructure/background-jobs.md, features/realtime.md
+depends_on: agents/core/backend.md, agents/infrastructure/background-jobs.md, agents/features/realtime.md
 conflicts_with: null
 prerequisites: null
 description: Resilience patterns for any external sync integration — state machine (healthy/degraded/recovering/failed), delta token management, webhook staleness detection, full resync triggers, idempotent upsert patterns. Use alongside any integration agent (Nylas, MS Graph, Stripe, etc.).

@@ -2,7 +2,7 @@
 name: Healthcare Industry Specialist
 tier: industries
 triggers: healthcare, hipaa, patient scheduling, ehr, emr, patient portal, telehealth, telemedicine, medical records, prescriptions, clinical, provider, patient intake, medical billing, hl7, fhir, practice management medical, appointment scheduling medical
-depends_on: database.md, auth.md, scheduling.md, compliance/hipaa.md
+depends_on: agents/core/database.md, agents/core/auth.md, agents/features/scheduling.md, agents/compliance/hipaa.md
 conflicts_with: null
 prerequisites: null
 description: Healthcare domain expertise — patient scheduling, EHR/EMR integration via FHIR/HL7, patient portals, telehealth workflows, clinical data models, medical billing (CPT/ICD-10), prescription management, and HIPAA-compliant architecture patterns

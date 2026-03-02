@@ -2,7 +2,7 @@
 name: Fix Queue Builder
 tier: meta
 triggers: fix queue, build fix queue, classify issues, prioritize fixes, fix plan, what needs fixing
-depends_on: meta/audit-agent.md, meta/audit-deps.md, core/qa.md
+depends_on: agents/meta/audit-agent.md, agents/meta/audit-deps.md, agents/core/qa.md
 conflicts_with: null
 prerequisites: null
 description: Reads QA gate output or audit report and produces a structured, dependency-ordered FIX-QUEUE.md that the Fix Executor can consume. Classifies every issue by fix type, orders by security → stability → quality → polish, identifies dependencies between fixes. The Fix Executor cannot run without this agent running first.
