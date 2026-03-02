@@ -287,3 +287,54 @@ CREATE POLICY "Users see messages in their channels"
 4. **Over-subscribing** — Don't subscribe to every table change. Filter by the specific rows/conditions needed.
 5. **Broadcast for sensitive data** — Broadcast doesn't go through RLS. Never send private data through broadcast channels.
 6. **Race conditions** — Multiple rapid updates can arrive out of order. Use timestamps or sequence numbers to order events correctly.
+
+---
+
+## V3 Rules — Sync & Realtime Resilience
+
+### Rule: Polling-First Sync Architecture
+
+Webhooks are an optimization, not the foundation. Any sync system that relies on webhooks alone **will fail silently** when the webhook endpoint is unreachable, the provider marks it as failed, or a network hiccup causes missed events.
+
+```typescript
+// V3: Dual-mode sync — webhooks + polling fallback
+// lib/sync/sync-manager.ts
+
+interface SyncState {
+  lastWebhookAt: Date | null;
+  lastPolledAt: Date | null;
+  mode: 'webhook' | 'polling';
+}
+
+const WEBHOOK_STALE_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes
+
+export async function getSyncMode(userId: string): Promise<'webhook' | 'polling'> {
+  const state = await getSyncState(userId);
+  
+  if (!state.lastWebhookAt) return 'polling';
+  
+  const msSinceLastWebhook = Date.now() - state.lastWebhookAt.getTime();
+  if (msSinceLastWebhook > WEBHOOK_STALE_THRESHOLD_MS) {
+    console.warn(`[Sync] Webhook stale for ${userId} — switching to polling fallback`);
+    await updateSyncMode(userId, 'polling');
+    return 'polling';
+  }
+  
+  return 'webhook';
+}
+
+// Update lastWebhookAt every time a webhook is received
+export async function recordWebhookReceived(userId: string) {
+  await updateSyncState(userId, { lastWebhookAt: new Date(), mode: 'webhook' });
+}
+```
+
+Architecture requirements:
+- Webhooks update `last_webhook_received_at` in DB on every event
+- A cron job runs every 5 minutes checking for stale webhook timestamps
+- If stale → switch to polling automatically
+- When webhooks resume → switch back to webhook mode
+
+### Rule: Polling Always Has Bounded Retries
+
+See `frontend.md` — V3: Polling Must Have Bounds. Same principle applies server-side in workers and cron jobs.

@@ -357,3 +357,83 @@ No dedicated code templates. Inline patterns above cover primary use cases. Choo
 4. **No visibility into failures** — A job that fails silently is worse than a job that doesn't exist. Always log, alert, and make dead letters visible in an admin UI.
 5. **Tight coupling between enqueue and process** — The code that enqueues a job shouldn't need to know how it's processed. Keep job types and payloads as a clean contract.
 6. **Forgetting timezone handling in cron** — pg_cron uses UTC. If you need "9 AM Eastern every day," convert to UTC or use a scheduling library that handles timezones.
+
+---
+
+## V3 Rules — BullMQ Production Patterns
+
+### Rule: Separate Redis Instances for Cache vs Queue
+
+```typescript
+// ❌ NEVER share Redis between BullMQ and cache
+const redis = new Redis(process.env.REDIS_URL!);
+// Used for both BullMQ AND cache — cache eviction destroys jobs
+
+// ✅ V3: Separate connections, separate configs
+// Queue Redis — NEVER evicts keys
+const queueRedis = new IORedis(process.env.QUEUE_REDIS_URL!, {
+  maxRetriesPerRequest: null,  // REQUIRED for BullMQ workers
+  enableReadyCheck: false,
+  // Pair with Redis config: maxmemory-policy noeviction
+});
+
+// Cache Redis — can evict normally
+const cacheRedis = new Redis(process.env.CACHE_REDIS_URL!);
+```
+
+In Upstash: create two separate databases — one for BullMQ (noeviction), one for cache.
+
+### Rule: Workers Cannot Run in Vercel API Routes
+
+Vercel serverless functions time out at 10–300 seconds. BullMQ workers are long-running processes that must stay alive to process jobs. They will be killed by Vercel mid-job.
+
+**Workers must run on:** Railway, Render, Fly.io, or a long-running Vercel Background Function (requires Pro plan + specific setup).
+
+```typescript
+// ✅ Separate worker process (workers/email-worker.ts)
+// This file is the entrypoint for a separate Railway/Render service
+import { Worker } from 'bullmq';
+import { queueRedis } from '../lib/queue/redis';
+
+const worker = new Worker('emails', async (job) => {
+  // process job
+}, { connection: queueRedis, concurrency: 5 });
+
+worker.on('failed', (job, err) => {
+  console.error(`[Worker] Job ${job?.id} failed:`, err);
+});
+```
+
+### Rule: Graceful Shutdown is Mandatory
+
+Without graceful shutdown, container restarts during active job processing = stalled jobs = duplicate processing when worker restarts.
+
+```typescript
+// ✅ V3: Every worker must handle SIGTERM/SIGINT
+const worker = new Worker('emails', processor, { connection: queueRedis });
+
+async function shutdown() {
+  console.log('[Worker] Shutting down gracefully...');
+  await worker.close();
+  await queueRedis.quit();
+  process.exit(0);
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+```
+
+### Rule: IORedis Connection for BullMQ Must Use maxRetriesPerRequest: null
+
+```typescript
+// ❌ Default IORedis config breaks BullMQ workers on Redis errors
+const connection = new IORedis(REDIS_URL);
+
+// ✅ BullMQ requires this specific config
+const connection = new IORedis(REDIS_URL, {
+  maxRetriesPerRequest: null,  // BullMQ requirement
+  enableReadyCheck: false,     // Prevents startup failures
+});
+```
+
+Without `maxRetriesPerRequest: null`, a transient Redis error will crash the entire worker process instead of being handled gracefully by BullMQ's retry logic.

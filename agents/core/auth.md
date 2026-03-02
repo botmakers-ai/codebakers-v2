@@ -393,3 +393,137 @@ const useStore = create(
 )
 // Fetch from Supabase on mount, not from localStorage
 ```
+
+---
+
+## V3 Rules — Auth Hardening
+
+### Rule: Atomic Auth User Creation (Mandatory)
+
+Never create a Supabase auth user without immediately rolling back if the subsequent profile/org creation fails. Orphaned auth users (auth record exists, no app record) cause permanent broken accounts.
+
+```typescript
+// ✅ V3: Atomic signup with rollback
+export async function signUpUser(email: string, password: string, name: string) {
+  const supabase = await createClient();
+  let authUserId: string | null = null;
+
+  try {
+    // Step 1: Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+    if (authError) throw authError;
+    authUserId = authData.user?.id ?? null;
+    if (!authUserId) throw new Error('Auth user creation returned no ID');
+
+    // Step 2: Create app profile (uses service role for atomicity)
+    const adminSupabase = createAdminClient();
+    const { error: profileError } = await adminSupabase
+      .from('profiles')
+      .insert({ id: authUserId, email, name });
+
+    if (profileError) throw profileError;
+
+    return { success: true, userId: authUserId };
+
+  } catch (error) {
+    // ROLLBACK: delete the auth user if anything after creation failed
+    if (authUserId) {
+      const adminSupabase = createAdminClient();
+      await adminSupabase.auth.admin.deleteUser(authUserId);
+    }
+    return { success: false, error: error instanceof Error ? error.message : 'Signup failed' };
+  }
+}
+```
+
+### Rule: Every Mutation Filters by id AND user_id
+
+Never update or delete by `id` alone. An attacker who knows (or guesses) a record ID can modify another user's data if the query doesn't also filter by `user_id`.
+
+```typescript
+// ❌ Wrong — filters by id only
+await supabase.from('documents').update({ status: 'approved' }).eq('id', documentId);
+
+// ✅ V3: Always filter by BOTH id AND user_id
+await supabase
+  .from('documents')
+  .update({ status: 'approved' })
+  .eq('id', documentId)
+  .eq('user_id', user.id);  // ← this is the security check
+```
+
+The QA gate greps for `.update` and `.delete` calls missing `user_id` filter. Fix every hit.
+
+### Rule: Mutations Through Server, RLS for Reads
+
+All writes (INSERT, UPDATE, DELETE) go through server actions with explicit auth checks. RLS protects reads. This pattern prevents a whole class of authorization bugs.
+
+```typescript
+// ✅ V3: Server action with explicit auth + user_id filter
+'use server';
+export async function updateDocument(id: string, data: UpdateDocumentInput) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  // Validate input with Zod first
+  const parsed = updateDocumentSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: parsed.error.flatten() };
+
+  // Filter by BOTH id AND user_id
+  const { error } = await supabase
+    .from('documents')
+    .update(parsed.data)
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) return { success: false, error: 'Update failed' };
+  return { success: true };
+}
+```
+
+### Rule: HOF Wrapper on Every Route
+
+Create once, use everywhere. Eliminates copy-paste auth checks that get missed:
+
+```typescript
+// lib/api/with-auth.ts
+import { createClient } from '@/lib/supabase/server';
+import { z, ZodSchema } from 'zod';
+import { NextRequest, NextResponse } from 'next/server';
+
+type RouteHandler<T> = (req: NextRequest, user: User, data: T) => Promise<NextResponse>;
+
+export function withAuth<T>(schema: ZodSchema<T>, handler: RouteHandler<T>) {
+  return async (req: NextRequest) => {
+    // 1. Auth check
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // 2. Input validation
+    const body = await req.json().catch(() => ({}));
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    }
+
+    // 3. Rate limiting (add upstash here if needed)
+
+    // 4. Execute handler
+    try {
+      return await handler(req, user, parsed.data);
+    } catch (err) {
+      console.error('[API Error]', err);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+  };
+}
+
+// Usage:
+export const POST = withAuth(createDocumentSchema, async (req, user, data) => {
+  // user is verified, data is validated — just do the work
+  const result = await createDocument(user.id, data);
+  return NextResponse.json(result);
+});
+```

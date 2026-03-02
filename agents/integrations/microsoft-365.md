@@ -578,3 +578,77 @@ No dedicated code templates for this agent — the inline patterns above cover a
 5. **Teams bot framework** — Teams bots use the Bot Framework SDK, which is separate from Graph API. Don't try to build a Teams bot purely with Graph — you need the Bot Framework for interactive messaging.
 6. **File path encoding** — SharePoint file paths with special characters must be URL-encoded. The Graph SDK handles this for IDs but not always for path-based access.
 7. **Consent scope mismatch** — If you request a scope the user hasn't consented to, the token request will fail silently or return a token without that scope. Always verify the granted scopes in the token response.
+
+---
+
+## V3 Rules — Microsoft Graph Delta Sync
+
+### Rule: Handle 410 Gone on Delta Tokens
+
+Delta tokens for mail/calendar resources can be invalidated when the sync state cache fills. You MUST handle 3 explicit states:
+
+```typescript
+// lib/sync/graph-delta.ts
+export async function fetchMailDelta(userId: string, accessToken: string) {
+  const savedToken = await getDeltaToken(userId);
+  
+  let url = savedToken
+    ? savedToken  // Resume from last deltaLink
+    : 'https://graph.microsoft.com/v1.0/me/messages/delta?$select=id,subject,from,receivedDateTime,isRead';
+
+  while (url) {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    // ✅ Handle 410 Gone — sync state invalidated
+    if (res.status === 410) {
+      console.warn(`[Graph] Delta token expired for ${userId} — restarting full sync`);
+      await clearDeltaToken(userId);  // Wipe saved token
+      return fetchMailDelta(userId, accessToken);  // Restart from scratch
+    }
+
+    if (!res.ok) throw new Error(`Graph API error: ${res.status}`);
+
+    const data = await res.json();
+    
+    // Process messages
+    if (data.value?.length > 0) {
+      await upsertMessages(userId, data.value);
+    }
+
+    if (data['@odata.nextLink']) {
+      // More pages — keep fetching, DON'T save this token
+      url = data['@odata.nextLink'];
+    } else if (data['@odata.deltaLink']) {
+      // Sync complete — save THIS token for next time
+      await saveDeltaToken(userId, data['@odata.deltaLink']);
+      url = null;  // Done
+    } else {
+      url = null;  // Unexpected — stop
+    }
+  }
+}
+```
+
+### Rule: Save Only deltaLink — Never Save skipToken (nextLink)
+
+```typescript
+// ❌ WRONG — saving nextLink (pagination token)
+// If worker crashes mid-sync, you're on page 3 of 10
+// When you restart with a saved skipToken, Graph may reject it
+if (data['@odata.nextLink']) {
+  await saveDeltaToken(userId, data['@odata.nextLink']);  // ← BUG
+}
+
+// ✅ V3: Only save deltaLink — the "sync complete" token
+if (data['@odata.nextLink']) {
+  url = data['@odata.nextLink'];
+  // Continue fetching — do NOT save this
+} else if (data['@odata.deltaLink']) {
+  await saveDeltaToken(userId, data['@odata.deltaLink']);  // ← Save this
+  url = null;
+}
+```
+
+If a worker crashes mid-sync, the next run will restart from the last saved `deltaLink` — which is the last successfully completed full sync. Some messages will be re-processed, which is why all sync handlers must be **idempotent** (upsert, not insert).

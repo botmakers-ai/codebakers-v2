@@ -251,3 +251,73 @@ Before declaring database work complete:
 3. **Over-indexing** — indexes speed up reads but slow down writes. Only index columns that appear in WHERE, JOIN, and ORDER BY clauses.
 4. **Schema drift** — always use migration files. Never modify production schemas directly.
 5. **Eager loading everything** — select only the columns you need. `select('*')` is fine for small tables but wasteful for wide ones.
+
+---
+
+## V3 Rules — Database Hardening
+
+### Rule: Schema-First Type Safety (After Every Migration)
+
+```bash
+# Run this after EVERY migration — never skip
+supabase gen types typescript --local > src/lib/supabase/types.ts
+git add src/lib/supabase/types.ts
+git commit -m "chore: regenerate supabase types after migration"
+```
+
+All DB inserts/updates use generated types. If types are stale, the build reveals it. Never manually write DB types — they will drift.
+
+### Rule: Use .maybeSingle() — Never .single()
+
+```typescript
+// ❌ .single() throws if row not found — crashes on missing data
+const { data } = await supabase.from('users').select().eq('id', id).single();
+
+// ✅ .maybeSingle() returns null if not found — handle gracefully
+const { data } = await supabase.from('users').select().eq('id', id).maybeSingle();
+if (!data) return { success: false, error: 'Not found' };
+```
+
+The QA gate greps for `.single()` — every hit is a bug waiting to happen.
+
+### Rule: Storage RLS Uses Path-Based Ownership
+
+```sql
+-- ❌ Wrong — any authenticated user can download any file
+CREATE POLICY "Authenticated users can download"
+  ON storage.objects FOR SELECT
+  USING (auth.uid() IS NOT NULL);
+
+-- ✅ V3: Path-based ownership — user can only access their own folder
+CREATE POLICY "Users can access own files"
+  ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'documents'
+    AND storage.foldername(name)[1] = (select auth.uid())::text
+  );
+-- File path convention: {user_id}/{filename} — enforced at upload time
+```
+
+### Rule: Wrap auth.uid() in Subselect (Performance)
+
+```sql
+-- ❌ Slow — auth.uid() called once per row (O(n))
+CREATE POLICY "select_own" ON public.documents
+  FOR SELECT USING (user_id = auth.uid());
+
+-- ✅ V3: Subselect caches result — called once per query (O(1))
+CREATE POLICY "select_own" ON public.documents
+  FOR SELECT USING (user_id = (select auth.uid()));
+```
+
+On tables with thousands of rows, this is the difference between a fast query and a timeout.
+
+### Rule: UUID Surrogate Keys Only
+
+```sql
+-- ❌ Never use serial/integer IDs — leaks row counts, not scalable
+id SERIAL PRIMARY KEY
+
+-- ✅ UUID always
+id UUID DEFAULT gen_random_uuid() PRIMARY KEY
+```

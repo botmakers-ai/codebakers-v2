@@ -285,3 +285,65 @@ Before declaring frontend work complete:
 3. **Token drift** — one hardcoded `#3b82f6` and the whole design system breaks. Always use CSS vars.
 4. **Mobile as afterthought** — build mobile-first, then enhance for desktop. Never the reverse.
 5. **Layout shift** — set explicit dimensions on images, skeletons, and dynamic content to prevent CLS.
+
+---
+
+## V3 Rules — Frontend Hardening
+
+### Rule: All Interactive Elements Must Have data-testid
+
+```typescript
+// ❌ No testid — Playwright tests use brittle CSS selectors
+<button onClick={handleSubmit}>Submit</button>
+<input placeholder="Email" />
+
+// ✅ V3: data-testid on every interactive element
+<button data-testid="submit-button" onClick={handleSubmit}>Submit</button>
+<input data-testid="email-input" placeholder="Email" />
+<form data-testid="login-form">
+```
+
+Convention: `[component]-[element]` — e.g., `login-form`, `submit-button`, `email-input`, `project-card`, `delete-modal`.
+
+### Rule: Polling Must Have Bounds — No Infinite Loops
+
+```typescript
+// ❌ Infinite poll — runs forever, no cleanup, no error handling
+useEffect(() => {
+  const interval = setInterval(async () => {
+    const status = await getStatus(id);
+    setStatus(status);
+  }, 2000);
+}, []);
+
+// ✅ V3: Bounded polling with max attempts, backoff, cleanup
+useEffect(() => {
+  let attempts = 0;
+  const MAX_ATTEMPTS = 30;        // 30 × 2s = 60s max
+  const INTERVAL_MS = 2000;
+  let timeoutId: NodeJS.Timeout;
+
+  async function poll() {
+    if (attempts >= MAX_ATTEMPTS) {
+      setStatus('timeout');
+      return;
+    }
+    attempts++;
+    try {
+      const result = await getStatus(id);
+      if (result.status === 'completed' || result.status === 'failed') {
+        setStatus(result.status);
+        return;  // Done — stop polling
+      }
+    } catch (err) {
+      console.error('Poll error:', err);
+      setStatus('error');
+      return;  // Stop on error
+    }
+    timeoutId = setTimeout(poll, INTERVAL_MS);
+  }
+
+  poll();
+  return () => clearTimeout(timeoutId);  // Cleanup on unmount
+}, [id]);
+```

@@ -244,3 +244,44 @@ Before declaring security work complete:
 3. **CSP too permissive** — `'unsafe-inline'` and `'unsafe-eval'` are common and weaken CSP significantly. Tighten them in production with nonces or hashes.
 4. **Rate limiting only on login** — also rate limit: signup, password reset, API endpoints, file uploads, and webhook receivers.
 5. **Dependency neglect** — a critical vulnerability in a dependency is your vulnerability. Automate scanning and updates.
+
+---
+
+## V3 Rules — Security Hardening
+
+### Rule: Raw SQL Execution is Banned
+
+```typescript
+// ❌ BANNED — SQL injection via string interpolation
+await prisma.$executeRawUnsafe(`UPDATE users SET role = '${role}' WHERE id = '${id}'`);
+await db.$queryRawUnsafe(`SELECT * FROM ${tableName}`);
+
+// ✅ Parameterized only — Supabase client handles this automatically
+await supabase.from('users').update({ role }).eq('id', id).eq('user_id', userId);
+```
+
+QA gate greps for `executeRawUnsafe` and `queryRawUnsafe` — any hit is a critical security finding.
+
+### Rule: Mutations Require Double Filter (id + user_id)
+
+```typescript
+// ❌ IDOR vulnerability — attacker with any valid ID can modify other users' data
+await supabase.from('invoices').update({ paid: true }).eq('id', invoiceId);
+
+// ✅ Mandatory double filter
+await supabase
+  .from('invoices')
+  .update({ paid: true })
+  .eq('id', invoiceId)
+  .eq('user_id', user.id);   // ← prevents IDOR
+```
+
+This is defense in depth alongside RLS. Both are required. RLS can have misconfigured policies. The explicit filter in code is the fallback.
+
+### Rule: Storage Policies Must Use Path-Based Ownership
+
+See `database.md` — V3: Storage RLS Uses Path-Based Ownership. This applies as a security rule as well as a database rule.
+
+### Rule: .single() is a Security/Stability Risk
+
+`.single()` throws a PostgrestError when zero rows are returned. This causes unhandled exceptions that can leak stack traces. Use `.maybeSingle()` and handle the null case explicitly.

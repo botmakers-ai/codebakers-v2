@@ -297,3 +297,76 @@ Before declaring backend work complete:
 3. **Leaking internal errors** — "column 'foo' does not exist" should never reach the user. Map to friendly messages.
 4. **Auth check ordering** — if you validate input before checking auth, you're doing work for unauthenticated users. Auth first, always.
 5. **Missing webhook idempotency** — webhooks can fire multiple times. Use idempotency keys or `upsert` to handle duplicates.
+
+---
+
+## V3 Rules — Backend Hardening
+
+### Rule: Zod as Type Source of Truth
+
+Never define a TypeScript type separately from its validation schema — they will drift.
+
+```typescript
+// ❌ Wrong — TS type and Zod schema defined separately, will drift
+interface CreateProjectInput { name: string; description?: string; }
+const createProjectSchema = z.object({ name: z.string(), description: z.string().optional() });
+
+// ✅ V3: Define in Zod, derive TS type with z.infer
+const createProjectSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+});
+type CreateProjectInput = z.infer<typeof createProjectSchema>;
+// One source of truth — schema and type are always in sync
+```
+
+### Rule: Bulk Operations Must Use Promise.all()
+
+```typescript
+// ❌ Sequential — O(n) database round trips, kills performance on bulk ops
+for (const doc of documents) {
+  await supabase.from('documents').update({ status: 'approved' }).eq('id', doc.id);
+}
+
+// ✅ V3: Batch fetch first, then parallel execution
+const ids = documents.map(d => d.id);
+const { data: existing } = await supabase
+  .from('documents')
+  .select('id, user_id')
+  .in('id', ids)
+  .eq('user_id', userId);  // security check in batch
+
+// Parallel updates
+await Promise.all(
+  existing.map(doc =>
+    supabase.from('documents')
+      .update({ status: 'approved' })
+      .eq('id', doc.id)
+      .eq('user_id', doc.user_id)
+  )
+);
+```
+
+For very large batches (1000+), chunk into groups of 100 and run chunks sequentially.
+
+### Rule: HOF Wrapper on Every Route — No Copy-Paste Auth
+
+See `auth.md` — V3: HOF Wrapper on Every Route. The pattern applies to all route handlers, server actions, and API routes. Never write raw auth checks inline.
+
+### Rule: All Background Work Through BullMQ — Not API Routes
+
+Any operation taking more than 3 seconds: enqueue it. Return immediately to the client. Let the worker handle it.
+
+```typescript
+// ❌ Wrong — blocks the API route, times out on Vercel
+export async function POST(req: NextRequest) {
+  await sendBulkEmails(1000);  // takes 30 seconds
+  return NextResponse.json({ success: true });
+}
+
+// ✅ V3: Enqueue and return
+export async function POST(req: NextRequest) {
+  await emailQueue.add('bulk-send', { campaignId }, { attempts: 3, backoff: { type: 'exponential' } });
+  return NextResponse.json({ queued: true });
+}
+```

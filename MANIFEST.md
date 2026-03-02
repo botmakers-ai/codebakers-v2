@@ -2,7 +2,7 @@
 
 > Complete registry of all agents, templates, and system files. The conductor reads this to route tasks and load agents.
 
-**Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/master/`
+**Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 ---
 
@@ -331,3 +331,46 @@ Agent improvement and performance tracking. Located in `metrics/`.
 |---------|------|---------|
 | 1.0.0 | 2025-02 | Initial release — 47 agents across 5 tiers, 8 templates |
 | 2.0.0 | 2025-06 | V2 upgrade — 77 agents across 9 tiers, 20 templates, 41 improvements. Added conductor, research, code-review, api-docs, migration-assistant, seed-data to meta tier. Added error-handling to core tier. Added onboarding, i18n, analytics to features tier. Updated auth (Supabase Auth only), qa (Vitest + Playwright enforcement), devops (deploy error fix loop), CODEBAKERS (locked stack, version pinning, .env.example, git discipline). |
+| 3.0.0 | 2026-03 | V3 upgrade — 5 new agents, 30 new rules across 10 agents. New agents: `meta/ui-smoke`, `meta/integration-verify`, `meta/rebuild-specialist`, `integrations/nylas`, `integrations/sync-resilience`. Updated agents: auth (atomic creation, mutation double-filter, HOF wrapper), database (maybeSingle, schema-first types, RLS subselect, storage RLS), security (raw SQL ban, IDOR protection), backend (Zod type source, bulk Promise.all, HOF wrapper), qa (17-point gate, coverage thresholds, built-app E2E, real Supabase), frontend (data-testid required, bounded polling), realtime (polling-first architecture), background-jobs (BullMQ Redis separation, worker process requirements, graceful shutdown), microsoft-365 (delta token handling, 410 Gone, deltaLink vs skipToken), audit-deps (Sentry/Next.js conflict, Nylas v2 in v3, ioredis dual client, BullMQ maxRetriesPerRequest). CLAUDE.md updated with V3 hard rules and all branch/URL references corrected to `main`. |
+
+---
+
+## V3 New Agents
+
+| Agent | Tier | Triggers |
+|-------|------|---------|
+| `meta/ui-smoke` | meta | smoke test, generate tests, test all pages, playwright smoke |
+| `meta/integration-verify` | meta | integration test, cross-feature test, verify integration, feature handoff |
+| `meta/rebuild-specialist` | meta | rebuild, broken app, codebase rescue, nothing works, audit and rebuild |
+| `integrations/nylas` | integrations | nylas, nylas email, nylas calendar, nylas v3, email sync nylas |
+| `integrations/sync-resilience` | integrations | sync resilience, sync state machine, sync recovery, webhook fallback, sync health |
+| 4.0.0 | 2026-03 | V4 upgrade — merged V3+V4 into single autonomous framework. New agents: `meta/interview` (only human moment — generates FLOWS.md + BRAIN.md), `meta/fix-queue-builder` (classifies and orders all issues for autonomous fixing), `meta/fix-executor` (autonomous self-healing loop — never stops, error is information), `meta/completeness-verifier` (verifies features work for real users against FLOWS.md). New templates: `BRAIN.template.md`. New project files: `.codebakers/BRAIN.md`, `.codebakers/BUILD-LOG.md`, `.codebakers/ERROR-LOG.md`, `.codebakers/FIX-QUEUE.md`, `.codebakers/FIXES-APPLIED.md`, `.codebakers/ASSUMPTIONS.md`, `.codebakers/CREDENTIALS-NEEDED.md`. Updated: `CLAUDE.md` (complete rewrite — identity, belief system, autonomous loop, memory system), `conductor.md` (V4 auto-chaining: QA fail→fix, feature complete→completeness check, 2 features→integration verify, 3 features→reviewer, build complete→pre-launch — all automatic), `qa.md` (auto-fix companion table for every gate check). Core principle: after interview, system is fully autonomous. The only output is working, verified, production-ready software. |
+
+---
+
+## V4 New Agents
+
+| Agent | Tier | Triggers |
+|-------|------|---------|
+| `meta/interview` | meta | new project, start project, interview, what are we building |
+| `meta/fix-queue-builder` | meta | fix queue, classify issues, prioritize fixes, what needs fixing |
+| `meta/fix-executor` | meta | fix, auto-fix, fix everything, run fixes, self-heal, repair |
+| `meta/completeness-verifier` | meta | completeness, verify feature, does this work, user flow check, is this done |
+
+## V4 Auto-Chain Sequence
+
+```
+Interview → FLOWS.md + BRAIN.md initialized
+  ↓
+Build agents execute (conductor orchestrates from FLOWS.md)
+  ↓ after every feature
+Completeness Verifier → gaps? → Fix Executor
+  ↓ after every 2 features  
+Integration Verifier
+  ↓ after every 3 features
+Reviewer → issues? → Fix Executor
+  ↓ build complete
+Pre-Launch Checklist → gaps? → Fix Executor
+  ↓ all passing
+FIXES-APPLIED.md + CREDENTIALS-NEEDED.md → done
+```

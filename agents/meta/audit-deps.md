@@ -236,3 +236,86 @@ For each conflict found, add to AUDIT-REPORT.md:
 
 If the conflict is in the CRITICAL section → it goes in Critical Failures with full cascade analysis.
 If it's in WARNING → it goes in Pattern Violations.
+
+---
+
+## V3 Additions — New Critical Conflicts
+
+### Sentry + Next.js Build Wrapper (Router Destruction)
+
+```bash
+grep -rn "@sentry/nextjs" package.json
+grep -rn "withSentryConfig\|Sentry.init" next.config.ts next.config.js sentry.*.config.ts
+```
+
+**Conflict:** `withSentryConfig()` wraps the Next.js router. If Sentry is misconfigured or version-mismatched, it silently disables the App Router. Every page returns a blank screen or the wrong component. The app appears to "work" in isolation but all navigation breaks.
+
+**Cascade:**
+1. Sentry wraps Next.js build config
+2. Version mismatch corrupts internal router references
+3. All `next/navigation` hooks (`useRouter`, `usePathname`) stop working
+4. Every page component renders but navigation fails
+5. Hard to detect — no explicit error, just broken routing
+
+**Fix:** Verify Sentry version matches the [Next.js compatibility matrix](https://docs.sentry.io/platforms/javascript/guides/nextjs/). Use `@sentry/nextjs` version that matches your Next.js major.
+
+---
+
+### Nylas v2 Patterns in v3 Codebase
+
+```bash
+grep -rn "require('nylas')\|from 'nylas'" package.json src/ --include="*.ts"
+# Check version:
+node -e "console.log(require('./node_modules/nylas/package.json').version)"
+# v3 is 7.x+ — v2 is 6.x and below
+```
+
+**Conflict:** Nylas v2 was deprecated December 31, 2024. The v2→v3 SDK is a breaking change:
+- v2: static class methods (`Nylas.config()`, `Nylas.with()`)
+- v3: instance-based (`new Nylas({ apiKey })`)
+- v2: automatic camelCase/snake_case conversion
+- v3: manual conversion required
+- v2: different auth flow, different webhook payload structure
+
+**Cascade:** v2 code silently fails against v3 API endpoints. Auth tokens are structured differently — connections appear to succeed but API calls return 401/404.
+
+**Fix:** Migrate to Nylas v3 SDK. See `agents/integrations/nylas.md` for v3 patterns.
+
+---
+
+### ioredis + @upstash/redis Dual Client Conflict
+
+```bash
+grep -rn "ioredis\|@upstash/redis" package.json
+grep -rn "new IORedis\|new Redis" src/ --include="*.ts" | grep -v "test\|spec"
+```
+
+**Conflict:** BullMQ requires `ioredis`. Upstash caching often uses `@upstash/redis` (HTTP-based). Using both with the same Redis URL creates connection conflicts — especially on Upstash where the HTTP client and TCP client behave differently.
+
+**Cascade:**
+1. BullMQ uses ioredis TCP connection to Upstash
+2. Upstash's TCP connections have a connection limit
+3. Cache layer also opens ioredis connections
+4. Connection pool exhausted → BullMQ worker stalls → jobs pile up → silent backlog
+
+**Fix:** Use separate Upstash databases for queue (ioredis/BullMQ) and cache (@upstash/redis HTTP). Never point both at the same Redis URL.
+
+---
+
+### BullMQ Worker Without maxRetriesPerRequest: null
+
+```bash
+grep -rn "new Worker\|new Queue\|new QueueEvents" src/ --include="*.ts" -A5 | grep -v "maxRetriesPerRequest"
+```
+
+**Conflict:** BullMQ workers require `maxRetriesPerRequest: null` on the IORedis connection. Default IORedis config will retry Redis commands a limited number of times and then throw. This exception propagates up to BullMQ and kills the worker process.
+
+**Cascade:** Worker crashes on any transient Redis error. Jobs stall. No recovery without manual restart.
+
+**Fix:**
+```typescript
+const connection = new IORedis(REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
+```

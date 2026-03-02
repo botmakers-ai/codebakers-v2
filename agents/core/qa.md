@@ -472,9 +472,112 @@ grep -rn "filter\|search\|sort" --include="*.test.ts" --include="*.test.tsx" src
 
 # 8. Verify all UI buttons are wired to real API routes
 grep -rn "onClick\|onSubmit" --include="*.tsx" src/ | grep -v "handler\|action\|mutation\|fetch"
+
+# V3 — RULES 9-17 (NEW — All Blocking)
+
+# 9. Ban .single() — use .maybeSingle() everywhere
+grep -rn "\.single()" --include="*.ts" --include="*.tsx" src/
+# .single() throws on empty result. Replace ALL with .maybeSingle()
+
+# 10. Detect commented-out auth checks
+grep -rn "//.*middleware\|//.*auth.*check\|//.*protect\|TODO.*auth\|FIXME.*auth\|if.*false.*auth" \
+  --include="*.ts" --include="*.tsx" src/
+# Any disabled auth = critical security issue
+
+# 11. Ban raw SQL execution
+grep -rn "executeRawUnsafe\|queryRawUnsafe\|\$queryRaw\`.*\$" --include="*.ts" src/
+# Direct SQL string interpolation = SQL injection risk
+
+# 12. Check mutations include user_id filter (not just id)
+grep -rn "\.update\b\|\.delete\b" --include="*.ts" src/lib src/app/api/
+# Each result: verify it has BOTH .eq('id', ...) AND .eq('user_id', ...) or org-level equivalent
+
+# 13. Dead dependency check
+npx depcheck --ignores="@types/*,eslint-*,prettier-*" 2>/dev/null | grep -A5 "Unused dependencies"
+# Remove unused packages before launch
+
+# 14. TypeScript strict mode
+grep '"strict"' tsconfig.json | grep -v false
+# Must be: "strict": true — fail if missing or false
+
+# 15. Detect await inside for loops (N+1 / bulk anti-pattern)
+grep -rn "for\s*(.*)\s*{" --include="*.ts" -A5 src/ | grep "await "
+# Each hit: refactor to Promise.all() or batch query
+
+# 16. Detect unbounded setInterval
+grep -rn "setInterval(" --include="*.ts" --include="*.tsx" src/
+# Every hit must have: a cleanup ref, max attempt counter, or error break condition
+
+# 17. Package version check
+node -e "const p=require('./package.json'); const deps={...p.dependencies,...p.devDependencies}; 
+  const carets=Object.entries(deps).filter(([k,v])=>v.startsWith('^')||v.startsWith('~'));
+  if(carets.length>0){console.log('UNPINNED:',carets.map(([k])=>k).join(', '));process.exit(1)}"
+# All versions must be pinned exactly — no ^ or ~
 ```
 
-**Gate is blocking.** The conductor does not allow moving to the next checkpoint until all 8 checks are clean.
+**Gate is blocking.** The conductor does not allow moving to the next checkpoint until all 17 checks are clean.
+
+### V3: Coverage Thresholds (Enforced in Build)
+
+```typescript
+// vitest.config.ts — V3 standard
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 70,
+        statements: 70,
+      },
+      include: ['src/lib/**', 'src/components/**'],
+      exclude: ['**/*.test.*', '**/*.d.ts', 'src/lib/supabase/types.ts'],
+    },
+  },
+});
+```
+
+Auth, billing, and core business logic files require 80% minimum coverage. Build fails if thresholds not met.
+
+### V3: E2E Must Run Against Built App (Not Dev Server)
+
+```typescript
+// playwright.config.ts — V3 standard
+export default defineConfig({
+  webServer: {
+    command: 'pnpm build && pnpm start',  // ✅ Built app — catches SSR/hydration issues
+    url: 'http://localhost:3000',
+    reuseExistingServer: false,
+    timeout: 180 * 1000,
+  },
+});
+```
+
+Dev server hides SSR errors. Always test against the built app.
+
+### V3: Real Local Supabase — Never Mock It
+
+```bash
+# E2E test setup
+supabase start
+supabase db reset   # Fresh migrations + seed data
+pnpm test:e2e
+supabase stop
+```
+
+Mocking Supabase hides RLS violations, FK constraint failures, and DB function bugs. Use `supabase start` with real seed data.
+
+### V3: Documentation Integrity Check
+
+Before any deploy, verify claimed readiness scores are honest:
+
+```bash
+grep -in "production.ready\|score.*\/100\|ready.*%\|% complete" PROJECT-STATE.md 2>/dev/null
+# If a score is claimed, it must match the pre-launch checklist actual output
+# Mismatched scores = documentation drift = trust issue
+```
 
 ---
 
@@ -527,3 +630,26 @@ grep -rn "tenant:" --include="*.ts" src/
 ```
 
 **All 8 must pass before any production deploy. No exceptions.**
+
+---
+
+## V4: Auto-Fix Companion
+
+Every QA gate check now has a paired fix routine. When the gate fails, Fix Executor uses these.
+
+| Check | Fix Type | Auto-Fix Approach |
+|-------|----------|-------------------|
+| `.single()` found | MECHANICAL | Replace with `.maybeSingle()` + add null check at call site |
+| Commented auth found | TEMPLATED | Uncomment + add HOF wrapper if missing |
+| `executeRawUnsafe` found | INFORMED | Read query, convert to parameterized Supabase call |
+| Missing `user_id` filter | INFORMED | Read types, find ownership column, add `.eq()` filter |
+| `depcheck` unused packages | MECHANICAL | `pnpm remove [package]` |
+| `strict: false` | MECHANICAL | Change to `true`, add new type errors to fix queue |
+| `await` in for loop | TEMPLATED | Wrap in `Promise.all()` |
+| Unbounded `setInterval` | TEMPLATED | Inject bounded polling pattern |
+| Unpinned versions | MECHANICAL | `pnpm add --save-exact [package]@[current version]` |
+| Stale Supabase types | MECHANICAL | `supabase gen types typescript --local > src/lib/supabase/types.ts` |
+| Missing `data-testid` | MECHANICAL | Add `data-testid="[component]-[element]"` to interactive elements |
+| `console.log` in prod | MECHANICAL | Replace with structured logger or remove |
+
+Fix Executor reads this table before approaching any QA gate finding.

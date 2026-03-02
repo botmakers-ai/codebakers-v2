@@ -301,3 +301,66 @@ These checks were added specifically because of real production failures:
 - [ ] Category 8: Monitoring — error pages exist, error tracking configured
 - [ ] PRE-LAUNCH-REPORT.md written with launch decision
 - [ ] No 🔴 BLOCKERS in report
+
+---
+
+## V3 Pre-Launch Additions
+
+### Category 9 — Documentation Integrity
+
+```bash
+# Verify claimed readiness scores are honest
+grep -in "production.ready\|score.*\/100\|ready.*%\|% complete" PROJECT-STATE.md 2>/dev/null
+
+# Cross-check against pre-launch checklist output
+# The score in PROJECT-STATE.md must match what this checklist actually produces
+# A mismatch means: documentation was not updated after failures were found
+```
+
+**Manual check:** The last time `agents/meta/pre-launch.md` ran, what was the actual pass count? Does `PROJECT-STATE.md` reflect that number? If not — update the state file. Never ship with a false readiness score.
+
+### Category 10 — Package Staleness
+
+```bash
+# Check for severely outdated major versions
+npx npm-check-updates --target minor 2>/dev/null | grep "Major"
+
+# Critical packages — should not be more than 1 major version behind:
+node -e "
+const p = require('./package.json');
+const deps = {...p.dependencies, ...p.devDependencies};
+const critical = ['next', '@anthropic-ai/sdk', 'typescript', '@supabase/supabase-js', 
+                  'stripe', '@upstash/redis', 'bullmq', 'nylas'];
+critical.forEach(pkg => {
+  if (deps[pkg]) console.log(pkg + ': ' + deps[pkg]);
+});
+"
+# Cross-reference against current npm versions — flag anything 2+ majors behind
+```
+
+### Category 11 — Commented-Out Auth Checks
+
+```bash
+# Detect disabled security
+grep -rn "//.*middleware\|// *if.*auth\|// *requireAuth\|// *checkAuth\|if.*false.*auth\|TODO.*auth.*later\|FIXME.*add.*auth" \
+  --include="*.ts" --include="*.tsx" src/ middleware.ts
+
+# Any hit is a BLOCKER — nothing ships with disabled auth checks
+```
+
+### Category 12 — Version Pinning Verification
+
+```bash
+# No ^ or ~ in package.json
+node -e "
+const p = require('./package.json');
+const deps = {...p.dependencies, ...p.devDependencies};
+const unpinned = Object.entries(deps)
+  .filter(([,v]) => typeof v === 'string' && (v.startsWith('^') || v.startsWith('~')));
+if (unpinned.length > 0) {
+  console.error('UNPINNED PACKAGES:', unpinned.map(([k,v])=>k+':'+v).join(', '));
+  process.exit(1);
+}
+console.log('All packages pinned ✓');
+"
+```
