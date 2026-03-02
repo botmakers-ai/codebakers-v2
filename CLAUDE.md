@@ -162,6 +162,11 @@ Audit Agent → Fix Queue Builder → Fix Executor loop
 
 ```
 Take next item from FIX-QUEUE.md
+  → EXPAND: load agents/meta/prompt-engineer.md
+            read dep map for entity
+            identify applicable patterns
+            write full internal execution prompt
+            then execute against the expansion — never the raw input
   → Read affected files completely (code + types + imports)
   → Check ERROR-LOG.md for similar past errors
   → Apply fix
@@ -178,6 +183,9 @@ Take next item from FIX-QUEUE.md
             document fully in BUILD-LOG.md
             move on — never stuck permanently
 ```
+
+**Every user command also goes through prompt expansion before execution.**
+System commands (@rebuild, @interview, @status, @help, @depmap) are exempt.
 
 **The error is always information. The next attempt is always smarter than the last.**
 
@@ -431,3 +439,4 @@ The only output of this system is working, verified, production-ready software.
 - `@launch` — run pre-launch checklist
 - `@assumptions` — show all automatic decisions
 - `@depmap` — regenerate and display dependency map
+- `@expand [task]` — manually trigger prompt expansion on any task without executing
