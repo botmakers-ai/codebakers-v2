@@ -66,15 +66,59 @@ This means:
    → If exists: read it. Full project context restored.
    → If missing: new project — run Interview Agent first.
 
-2. Read .codebakers/FIX-QUEUE.md (if exists)
-3. Read last 30 lines of .codebakers/BUILD-LOG.md (if exists)
-4. Read last 10 entries of .codebakers/ERROR-LOG.md (if exists)
-5. Run: tsc --noEmit && git status && git log --oneline -5
+2. Check dep:map script is installed (run once, silently, no user action needed):
+   → cat package.json | grep dep:map
+   → If missing: install it automatically (see: Setup: dep:map below)
 
-6. Greet:
+3. Read .codebakers/FIX-QUEUE.md (if exists)
+4. Read .codebakers/DEPENDENCY-MAP.md (if exists) ← live dependency map
+5. Read last 30 lines of .codebakers/BUILD-LOG.md (if exists)
+6. Read last 10 entries of .codebakers/ERROR-LOG.md (if exists)
+7. Run: tsc --noEmit && git status && git log --oneline -5
+
+8. Greet:
    Resuming: "🍞 CodeBakers: active. Project: [name]. [X] fixes remaining. Resuming from [last action]."
    New: "🍞 CodeBakers: active. New project detected. Starting interview..."
 ```
+
+## Setup: dep:map
+
+Run this check automatically at session start. No user involvement needed.
+
+```bash
+# Check if already installed
+cat package.json | grep dep:map
+```
+
+If missing, install silently:
+
+```bash
+# 1. Install ts-node if not present
+cat package.json | grep ts-node || pnpm add -D ts-node --save-exact
+
+# 2. Create scripts directory if needed
+mkdir -p scripts
+
+# 3. Pull the generator script from the framework repo
+curl -s -o scripts/generate-dep-map.ts \
+  https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/scripts/generate-dep-map.ts
+
+# 4. Add dep:map to package.json scripts
+node -e "
+  const fs = require('fs');
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
+  pkg.scripts = pkg.scripts || {};
+  pkg.scripts['dep:map'] = 'ts-node scripts/generate-dep-map.ts';
+  fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+  console.log('dep:map script added');
+"
+
+# 5. Verify it works
+pnpm dep:map
+```
+
+Log to BUILD-LOG.md: `[Setup] dep:map installed and verified`
+This runs once per project. Never again after that.
 
 ---
 
@@ -87,10 +131,12 @@ Interview Agent (only human moment)
   → Asks human only about genuine product decisions
   → Produces: project-profile.md, FLOWS.md, CREDENTIALS-NEEDED.md
   → Initializes: .codebakers/BRAIN.md
+  → Runs: pnpm dep:map (initial empty map)
   → After this: fully autonomous
 
 Build Loop (no humans)
   → Conductor builds from FLOWS.md
+  → After every new store or component: pnpm dep:map
   → After every feature: Completeness Verifier
   → After every 2 features: Integration Verifier
   → After every 3 features: Reviewer + Fix Executor
@@ -103,6 +149,7 @@ Build Loop (no humans)
 ## Existing / Broken Project Flow
 
 ```
+pnpm dep:map (first)
 Audit Agent → Fix Queue Builder → Fix Executor loop
 → Completeness Verifier on fixed features
 → Pre-Launch Checklist
@@ -143,6 +190,7 @@ Every project maintains `.codebakers/` — the agent's persistent memory across 
 ```
 .codebakers/
 ├── BRAIN.md              ← Master state. Read every session.
+├── DEPENDENCY-MAP.md     ← Generated dependency map. Never edit by hand.
 ├── BUILD-LOG.md          ← Append-only. Every action taken.
 ├── ERROR-LOG.md          ← Every error, root cause, fix, pattern learned.
 ├── FIX-QUEUE.md          ← Current queue. Survives context resets.
@@ -153,7 +201,7 @@ Every project maintains `.codebakers/` — the agent's persistent memory across 
     └── YYYY-MM-DD-NNN.md
 ```
 
-Write to these files constantly — after every fix, every decision, every error. The filesystem is the memory. Context window is the working surface.
+Write to these files constantly. The filesystem is the memory. Context window is the working surface.
 
 Commit `.codebakers/` after every session:
 ```bash
@@ -161,6 +209,110 @@ git add .codebakers/
 git commit -m "chore(memory): session log — [summary]"
 git push
 ```
+
+---
+
+## Dependency Map System — 3-Layer Enforcement
+
+This is the system that prevents the most common class of bugs in AI-built apps: mutations that update the database but leave the UI in a broken, stale, or inconsistent state.
+
+### Why This Exists
+
+Claude Code has no model of your app's data flow. When you say "delete account," it calls the API and stops. It doesn't know that 5 stores reference that account, 8 components render it, and the active state needs to switch. Every one of those missed updates is a bug.
+
+The dependency map system makes the data flow **explicit, persistent, and generated from code** — not written by hand, not trusted from memory.
+
+### Layer 1 — The Generated Map (Source of Truth)
+
+`.codebakers/DEPENDENCY-MAP.md` is written by a script that reads actual imports and store references. It cannot be wrong about what exists. It can only be stale if not regenerated.
+
+```bash
+pnpm dep:map    # regenerate from live codebase
+```
+
+### Layer 2 — Mandatory Regeneration Triggers
+
+Run `pnpm dep:map` at these moments. No exceptions:
+
+| Trigger | When |
+|---------|------|
+| Before any @rebuild | Stage 0, always |
+| After any new store file created | Immediately |
+| After any new component that uses a store | Immediately |
+| After any mutation handler is implemented | Verify then commit |
+| Session start (if map is >24hrs old) | Before first task |
+| Before any audit | Before reading the codebase |
+
+### Layer 3 — Grep Verification at Task Time
+
+The map is primary. Grep catches the delta since last regeneration.
+
+```bash
+# Run before every mutation handler — catches anything added since last pnpm dep:map
+grep -r "[EntityName]" src/stores/ src/components/ src/hooks/ --include="*.ts" --include="*.tsx" -l
+```
+
+If grep finds something not in the map → `pnpm dep:map` → proceed.
+
+---
+
+## RULE: Mutation Handler — No Exceptions
+
+**A mutation is never just the API call.**
+
+Every create, update, or delete touches: a database row, one or more Zustand stores, one or more UI components, and possibly active/selected state, derived values, cached data, and related stores.
+
+Writing only the API call is an **incomplete implementation**. Incomplete mutations are bugs by definition.
+
+### When This Rule Fires
+
+Any handler that calls POST, PATCH, PUT, or DELETE. Keywords: add, create, insert, delete, remove, archive, update, edit, rename, move + any entity name.
+
+### The 4-Step Process
+
+**Step 1 — Read the map:**
+```bash
+cat .codebakers/DEPENDENCY-MAP.md
+# Find entity → get stores, active state field, last-item behavior
+```
+
+**Step 2 — Grep verification:**
+```bash
+grep -r "[EntityName]" src/stores/ src/components/ src/hooks/ --include="*.ts" --include="*.tsx" -l
+# Anything not in map → pnpm dep:map first
+```
+
+**Step 3 — Write the complete handler (all layers at once):**
+- API call
+- ALL stores from the map
+- Active/selected state handling
+- Last-item edge case
+- Rollback on failure
+- User feedback (toast)
+
+**Step 4 — Ripple check in running app:**
+- Mutation performed
+- Every component in the map checked — entity gone/updated everywhere
+- Hard refresh — state still correct
+- No console errors
+
+**Load the full pattern for templates:**
+```
+→ agents/patterns/mutation-handler.md
+```
+
+### Non-Negotiable Checklist
+
+A mutation handler is NOT complete until:
+- [ ] `.codebakers/DEPENDENCY-MAP.md` was read before writing code
+- [ ] `pnpm dep:map` was run if map was stale or missing
+- [ ] Grep scan verified nothing added since last map generation
+- [ ] ALL stores from the map were updated
+- [ ] Active/selected state handled
+- [ ] Last-item edge case handled
+- [ ] Rollback on API failure implemented
+- [ ] Ripple check performed in running app
+- [ ] Map regenerated and committed if new stores/components were added
 
 ---
 
@@ -207,6 +359,7 @@ Every feature must have:
 
 QA gate fails → Fix Executor runs automatically (never just report and block)
 Feature complete → Completeness Verifier runs automatically
+New store or component added → `pnpm dep:map` runs automatically
 Every 2 features → Integration Verifier runs automatically
 Every 3 features → Reviewer runs automatically
 Build complete → Pre-Launch runs automatically
@@ -217,11 +370,12 @@ Build complete → Pre-Launch runs automatically
 
 At 70% context:
 1. Finish current atomic unit
-2. Run tsc --noEmit, fix findings
-3. Commit all work
-4. Update .codebakers/BRAIN.md and FIX-QUEUE.md
-5. Write session log
-6. Tell user: "🍞 CodeBakers: Context at 70%. Resume: 'Continue CodeBakers build — read .codebakers/BRAIN.md'"
+2. Run `pnpm dep:map` — commit updated map
+3. Run `tsc --noEmit`, fix findings
+4. Commit all work
+5. Update `.codebakers/BRAIN.md` and `FIX-QUEUE.md`
+6. Write session log
+7. Tell user: "🍞 CodeBakers: Context at 70%. Resume: 'Continue CodeBakers build — read .codebakers/BRAIN.md'"
 
 ---
 
@@ -233,13 +387,15 @@ When a fix fails — the error is information, not a verdict.
 When the direct path is blocked — there is another path to the same outcome.
 When something seems impossible — it hasn't been approached correctly yet.
 
+The dependency map exists because bugs don't come from bad code. They come from incomplete models of how the app fits together. The map makes the model explicit, persistent, and generated from truth.
+
 The only output of this system is working, verified, production-ready software.
 
 ---
 
 ## Commands
 
-- `@rebuild` — full autonomous pipeline on existing codebase: read → reconstruct intent → audit → fix → verify → report. No further input needed.
+- `@rebuild` — full autonomous pipeline on existing codebase: dep map → read → reconstruct intent → audit → fix → verify → report
 - `@interview` — start project interview (new projects)
 - `@fix` — run fix executor on current findings
 - `@flows` — show or regenerate FLOWS.md
@@ -250,3 +406,4 @@ The only output of this system is working, verified, production-ready software.
 - `@agent [name]` — load specific agent
 - `@launch` — run pre-launch checklist
 - `@assumptions` — show all automatic decisions
+- `@depmap` — regenerate and display dependency map
