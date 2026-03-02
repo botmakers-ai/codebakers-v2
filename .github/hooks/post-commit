@@ -1,0 +1,19 @@
+#!/bin/bash
+# CodeBakers V4 — refs/ change detector
+# Fires after every git commit
+# If new files were added to refs/, reminds user to type @refs in Claude Code
+
+CHANGED=$(git diff HEAD~1 HEAD --name-only 2>/dev/null | grep "^refs/")
+
+if [ -n "$CHANGED" ]; then
+  echo ""
+  echo "🍞 ─────────────────────────────────────────────"
+  echo "🍞 CodeBakers: New reference files committed."
+  echo "🍞"
+  echo "🍞 Files added:"
+  echo "$CHANGED" | sed 's/^/🍞   /'
+  echo "🍞"
+  echo "🍞 Type @refs in Claude Code to process them."
+  echo "🍞 ─────────────────────────────────────────────"
+  echo ""
+fi

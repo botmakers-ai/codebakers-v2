@@ -26,27 +26,115 @@ Run in order. Never skip steps.
    → cat package.json | grep dep:map
    → If missing: install it (see CLAUDE.md Setup: dep:map)
 
-2. Check for .codebakers/BRAIN.md
-   → EXISTS: read it fully — context restored
-   → MISSING: new project — run Interview Agent first, nothing else
+2. Create refs/ folder structure — ALWAYS, first thing, even if it exists
+   refs/
+   ├── prd/        ← Requirements, specs, feature lists
+   ├── design/     ← Mockups, screenshots, Figma exports, PDFs
+   ├── api/        ← API docs, Postman collections, endpoint specs
+   ├── brand/      ← Brand guidelines, logos, color palettes, fonts
+   ├── schema/     ← Database schemas, ERDs, data models
+   └── other/      ← Anything else relevant
 
-3. Read .codebakers/FIX-QUEUE.md (if exists)
-4. Read .codebakers/DEPENDENCY-MAP.md (if exists)
-5. Read last 30 lines .codebakers/BUILD-LOG.md (if exists)
-6. Read last 10 entries .codebakers/ERROR-LOG.md (if exists)
-7. Run: tsc --noEmit && git status && git log --oneline -5
+   Tell user immediately every session:
+   "🍞 CodeBakers: refs/ is ready. Drop reference files anytime — before,
+   during, or after the interview. They are processed automatically.
 
-8. Check for refs/ folder
-   → If missing: create refs/prd/ refs/design/ refs/api/ refs/brand/ refs/schema/ refs/other/
-   → Tell user: "🍞 CodeBakers: Drop any PRD, design files, API docs, or brand guidelines
-     in the refs/ subfolders. This gives me context to build exactly what you have in mind."
-   → Wait for user to add files or say "skip"
+   refs/prd/    → requirements, specs, user stories
+   refs/design/ → mockups, screenshots, style guides
+   refs/api/    → API docs, endpoint specs
+   refs/brand/  → brand guidelines, colors, fonts
+   refs/schema/ → database schemas, data models
+   refs/other/  → anything else
 
-9. Greet with actual state:
-   Resuming: "🍞 CodeBakers: active. Project: [name]. [N] fixes remaining. 
-              Last action: [from BUILD-LOG]. Resuming: [from BRAIN.md]."
-   New:      "🍞 CodeBakers: active. New project detected. Starting interview..."
+   Type @refs anytime after adding new files."
+
+3. Process refs/ — run Refs Processing (see section below)
+
+4. Check for .codebakers/BRAIN.md
+   → EXISTS: read it fully — context restored, skip to step 7
+   → MISSING: new project — go to step 5
+
+5. NEW PROJECT — show this message and STOP completely:
+   "🍞 CodeBakers: New project detected.
+
+   refs/ is ready. Add any reference files now if you have them —
+   PRDs, mockups, API docs, brand guidelines, schema files.
+   The more context you give me, the better the proposals.
+
+   When ready to start: type @interview
+   Nothing to add right now? Just type @interview."
+
+   STOP. Do not proceed. Do not start interview automatically. Wait for @interview.
+
+6. @interview triggered:
+   → Re-process refs/ first (catch anything just added)
+   → Run Interview Agent — every proposal informed by ref files
+   → After interview contract confirmed: re-process refs/ again
+   → Begin build loop
+
+7. RESUMING PROJECT — read state:
+   → .codebakers/FIX-QUEUE.md
+   → .codebakers/DEPENDENCY-MAP.md
+   → Last 30 lines .codebakers/BUILD-LOG.md
+   → Last 10 entries .codebakers/ERROR-LOG.md
+   → tsc --noEmit && git status && git log --oneline -5
+
+8. Greet with actual state:
+   "🍞 CodeBakers: active. Project: [name].
+   [N] fixes remaining. Last action: [from BUILD-LOG].
+   Resuming: [from BRAIN.md]."
 ```
+
+---
+
+## Refs Processing
+
+Runs at: every session start, before @interview, after @interview, when @refs is typed.
+Uses `.refs-processed` manifest — never re-processes unchanged files.
+
+```
+For each file in refs/ NOT listed in .refs-processed:
+
+refs/prd/ files:
+  → Read completely
+  → Extract: requirements, features, user stories, constraints
+  → If FLOWS.md exists: cross-reference — flag uncovered requirements as FIX-QUEUE P1
+  → Update BRAIN.md: key requirements section
+
+refs/design/ files (images, PDFs, screenshots):
+  → Use vision to read — extract colors, layout, typography, components
+  → CLIENT DESIGN OVERRIDES general UI research
+  → Update UI-RESEARCH.md design tokens with client-specific values
+  → Add to BRAIN.md: "Client design [file]: [key decisions extracted]"
+
+refs/api/ files:
+  → Read completely
+  → Extract: base URL, auth method, all endpoints, request/response shapes, rate limits
+  → Update BRAIN.md integrations section with full API profile
+  → Update CREDENTIALS-NEEDED.md with required credentials
+
+refs/brand/ files:
+  → Read/view with vision
+  → Extract: primary color, secondary, fonts, logo rules, tone
+  → BRAND TOKENS OVERRIDE EVERYTHING ELSE in UI-RESEARCH.md
+  → Add brand summary to BRAIN.md
+
+refs/schema/ files:
+  → Read completely
+  → Cross-reference against entities in project-profile.md
+  → Flag conflicts → BRAIN.md for resolution
+
+refs/other/ files:
+  → Read completely, summarize, add relevant context to BRAIN.md
+
+After all files processed:
+  → Append each filename + date to .refs-processed
+  → git add refs/ .refs-processed
+  → git commit -m "chore(refs): process [filenames]"
+  → Report: "🍞 CodeBakers: Processed [N] files — [one line per file: what was extracted]"
+```
+
+Always use vision for image and PDF files. Visual refs are the most valuable input — never skip them.
 
 ---
 
