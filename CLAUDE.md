@@ -78,7 +78,7 @@ This means:
 
 8. Greet:
    Resuming: "🍞 CodeBakers: active. Project: [name]. [X] fixes remaining. Resuming from [last action]."
-   New: "🍞 CodeBakers: active. New project detected. Starting interview..."
+   New: "🍞 CodeBakers: New project detected. refs/ is ready. Add reference files if you have them, then type @interview to start."
 ```
 
 ## Setup: dep:map

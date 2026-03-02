@@ -48,13 +48,18 @@ Run in order. Never skip steps.
 
    Type @refs anytime after adding new files."
 
-3. Process refs/ — run Refs Processing (see section below)
+3. Check for .codebakers/BRAIN.md
+   → EXISTS: existing project — go to step 4
+   → MISSING: new project — skip to step 5
 
-4. Check for .codebakers/BRAIN.md
-   → EXISTS: read it fully — context restored, skip to step 7
-   → MISSING: new project — go to step 5
+4. EXISTING PROJECT — Process refs/ now:
+   → Run Refs Processing (see section below)
+   → This catches any new files added since last session
+   → Then go to step 7
 
-5. NEW PROJECT — show this message and STOP completely:
+5. NEW PROJECT — Skip refs processing for now (refs/ just created, empty)
+   Show this message and STOP completely:
+
    "🍞 CodeBakers: New project detected.
 
    refs/ is ready. Add any reference files now if you have them —
@@ -66,13 +71,13 @@ Run in order. Never skip steps.
 
    STOP. Do not proceed. Do not start interview automatically. Wait for @interview.
 
-6. @interview triggered:
-   → Re-process refs/ first (catch anything just added)
+6. @interview triggered (new projects only):
+   → Process refs/ first (catch anything user just added)
    → Run Interview Agent — every proposal informed by ref files
-   → After interview contract confirmed: re-process refs/ again
+   → After interview contract confirmed: process refs/ again (catch any added during interview)
    → Begin build loop
 
-7. RESUMING PROJECT — read state:
+7. EXISTING PROJECT — read state:
    → .codebakers/FIX-QUEUE.md
    → .codebakers/DEPENDENCY-MAP.md
    → Last 30 lines .codebakers/BUILD-LOG.md
@@ -89,7 +94,11 @@ Run in order. Never skip steps.
 
 ## Refs Processing
 
-Runs at: every session start, before @interview, after @interview, when @refs is typed.
+**Triggers:**
+- **Existing projects:** Every session start (Step 4)
+- **New projects:** When @interview is typed (Step 6), then again after interview completes
+- **Anytime:** When user types @refs
+
 Uses `.refs-processed` manifest — never re-processes unchanged files.
 
 ```
