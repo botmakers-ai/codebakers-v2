@@ -57,6 +57,9 @@ GATE
   □ Hard refresh — state correct
   □ No console errors
   □ pnpm dep:map run and committed
+  □ JSDoc on every new component and function
+  □ API route documented inline (accepts, returns, errors)
+  □ Every non-obvious decision has a // Why: comment
 ```
 
 The checklist must be written out before coding starts. Every box must be checked before the feature is marked done.
@@ -159,6 +162,9 @@ GATE CHECK
   □ Hard refresh — state correct after reload
   □ No console errors in browser
   □ pnpm dep:map run and result committed
+  □ JSDoc on every new component and function
+  □ API route documented inline (accepts, returns, errors)
+  □ Every non-obvious decision has a // Why: comment
 ─────────────────────────────────────────────
 GATE COMMIT: feat(atomic): [name] — gate passed [N/N checks]
 ```
