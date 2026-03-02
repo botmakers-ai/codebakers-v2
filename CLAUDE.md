@@ -467,6 +467,7 @@ Commands also work in plain English (e.g., "rebuild this app", "show me the flow
 - `@fix` — run fix executor on current findings
 - `@flows` — show or regenerate FLOWS.md
 - `@memory` — show BRAIN.md summary
+- `@mockups` — analyze design mockups in refs/design/. Extracts components, entities, interactions, design tokens. Generates DESIGN-CONTRACT.md and enhanced build queue with exact specs.
 - `@queue` — show fix queue
 - `@status` — what's done, what's remaining
 - `@team` — show all agents

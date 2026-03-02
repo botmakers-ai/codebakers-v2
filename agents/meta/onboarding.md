@@ -57,6 +57,91 @@ STOP. End session.
 
 **If user says "Yes, continue":**
 
+Proceed to Phase 0.75.
+
+---
+
+## Phase 0.75: Mockup Upload Prompt
+
+Ask user if they have mockups to add before starting the interview.
+
+```
+🍞 CodeBakers: Do you have design mockups for this app?
+
+Mockups help me:
+✓ Build the exact UI you want (no design guessing)
+✓ Extract data schema from what's shown
+✓ Detect gaps (missing states, interactions)
+✓ Suggest improvements based on app type
+
+Supported formats:
+→ JSX/HTML mockups from staff designers (code parsing — most accurate)
+→ Images/PDFs (vision extraction — estimates values, requires validation)
+→ Figma exports (as image or PDF)
+
+Drop mockup files in refs/design/ if you have them.
+
+Have mockups to add?
+[Yes, added them / No, skip for now / I'll add later]
+```
+
+Wait for user response.
+
+**If user says "Yes, added them":**
+
+```
+🍞 CodeBakers: Analyzing mockups in refs/design/...
+
+I'll extract:
+→ Components (UI inventory)
+→ Entities (data schema)
+→ Interactions (behavior mapping)
+→ Design tokens (colors, spacing, typography)
+→ Missing states (loading, error, empty)
+
+This creates a DESIGN-CONTRACT.md that becomes the build specification.
+
+Processing...
+```
+
+Then:
+1. Load `agents/meta/mockup-analyzer.md`
+2. Run mockup analysis
+3. Generate DESIGN-CONTRACT.md
+4. Generate enhanced FIX-QUEUE with design specs
+5. Report completion:
+
+```
+🍞 CodeBakers: Mockup analysis complete.
+
+Created:
+→ DESIGN-CONTRACT.md ([N] components, [N] entities)
+→ Enhanced build queue with exact design specs
+
+Flagged [N] gaps:
+→ [N] missing states (loading, error, empty)
+→ [N] incomplete interactions (missing confirmations, feedback)
+→ [N] accessibility issues (missing labels, focus management)
+
+These are integrated into the build queue automatically.
+
+Proceeding to interview...
+```
+
+Proceed to Phase 1.
+
+**If user says "No, skip for now" or "I'll add later":**
+
+```
+🍞 CodeBakers: No problem.
+
+You can analyze mockups anytime with @mockups command.
+
+Drop files in refs/design/, then type @mockups.
+
+Proceeding to interview...
+```
+
 Proceed to Phase 1.
 
 ---

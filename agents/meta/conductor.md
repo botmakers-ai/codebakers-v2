@@ -576,6 +576,16 @@ After the Interview Agent completes and produces FLOWS.md:
    → Write to BRAIN.md: COMPLEXITY_MODE: [simple|production]
    → Simple mode skips: completeness verifier, integration verifier (speeds up small projects)
    → Production mode: full machinery (current behavior)
+3.6. Check for mockups and run analysis if present (automatic)
+   → Check refs/design/ for files
+   → If refs/design/ has files AND DESIGN-CONTRACT.md missing:
+     · Load agents/meta/mockup-analyzer.md
+     · Run mockup analysis automatically
+     · Generate DESIGN-CONTRACT.md
+     · Generate enhanced FIX-QUEUE items with design specs
+     · Report: "[N] components extracted, [N] gaps flagged"
+   → If DESIGN-CONTRACT.md exists: skip (already analyzed)
+   → If refs/design/ empty: skip (no mockups)
 4. Run: pnpm dep:map (initial empty map — establishes baseline)
 5. Break every flow into atomic units
 6. Dependency-order the units (what must exist before what)
@@ -1457,6 +1467,55 @@ When user says `@memory`, "show memory", "show brain", "project state":
   · Never-dos
   · Key architectural decisions
 → If missing: "🍞 CodeBakers: No project memory. Run @interview to initialize."
+```
+
+---
+
+## @mockups Routing
+
+When user says `@mockups`, "analyze mockups", "process mockups", "design contract":
+
+```
+→ Check refs/design/ for files
+→ If refs/design/ is empty:
+  "🍞 CodeBakers: No mockup files found in refs/design/
+
+  Supported formats:
+  → JSX/HTML mockups (code parsing — exact values)
+  → Images/PDFs (vision extraction)
+  → Figma exports (as image or PDF)
+
+  Drop mockup files in refs/design/, then type @mockups"
+
+→ If refs/design/ has files:
+  · Load agents/meta/mockup-analyzer.md
+  · Run full mockup analysis
+  · Extract: components, entities, interactions, design tokens, states
+  · Generate DESIGN-CONTRACT.md
+  · Generate enhanced FIX-QUEUE items with embedded design specs
+  · Cross-reference with FLOWS.md entities (flag mismatches)
+  · Update UI-RESEARCH.md with design tokens from mockups
+  · Report:
+    "🍞 CodeBakers: Mockup analysis complete.
+
+    Extracted:
+    → [N] components
+    → [N] entities
+    → [N] API endpoints inferred
+    → Design tokens: [colors, spacing, typography]
+
+    Gaps flagged:
+    → [N] missing states (loading, error, empty)
+    → [N] incomplete interactions (confirmations, feedback)
+    → [N] accessibility issues
+
+    Created:
+    → DESIGN-CONTRACT.md ([N] components listed)
+    → Enhanced FIX-QUEUE items with design specs
+
+    Contextual suggestions: [N] improvements based on app type
+
+    Next: Review DESIGN-CONTRACT.md and proceed with build"
 ```
 
 ---
