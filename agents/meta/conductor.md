@@ -120,6 +120,58 @@ Run in order. Never skip steps.
    → Last 10 entries .codebakers/ERROR-LOG.md
    → tsc --noEmit && git status && git log --oneline -5
 
+7a. CRASH RECOVERY CHECK:
+   → Read BRAIN.md — look for "Mid-Build State" section
+   → If Mid-Build State exists:
+
+     INTERRUPTED BUILD DETECTED
+     ─────────────────────────────────────────────
+     1. Read .codebakers/UNIT-PROGRESS.md completely
+     2. Extract:
+        - Unit name
+        - Unit type (CRUD/read-only/integration/refactor/background-job)
+        - Completed steps count
+        - Last commit hash
+        - Next step description
+        - Resume context (why this approach, edge cases, decisions made)
+
+     3. Verify wip commits match progress:
+        → git log --grep="wip([unit-name])" --oneline | wc -l
+        → Count must equal completed steps in UNIT-PROGRESS.md
+        → If mismatch: UNIT-PROGRESS.md is source of truth (manual edit might have occurred)
+
+     4. Verify codebase is in valid state:
+        → tsc --noEmit
+        → If errors: last wip commit was incomplete — revert it:
+           git revert HEAD --no-commit
+           git commit -m "revert: incomplete wip step — resuming from prior clean state"
+           Decrement completed steps in UNIT-PROGRESS.md
+
+     5. Report to user:
+        "🍞 CodeBakers: Crash recovery — resuming interrupted build.
+
+        Unit: [unit name]
+        Type: [type]
+        Progress: [N/total] steps complete
+        Last commit: [hash]
+
+        Completed steps:
+        ✅ [list each completed step]
+
+        Next step: [step name]
+        Context: [resume context from UNIT-PROGRESS.md]
+
+        Resuming now — no user input needed."
+
+     6. Resume from next unchecked step in UNIT-PROGRESS.md
+     7. DO NOT restart unit from scratch
+     8. DO NOT re-do completed steps
+     9. DO NOT ask user what to do — UNIT-PROGRESS.md is the instruction
+
+     ─────────────────────────────────────────────
+
+   → If no Mid-Build State: normal startup (go to step 8)
+
 8. Greet with actual state:
    "🍞 CodeBakers: active. Project: [name].
    [N] fixes remaining. Last action: [from BUILD-LOG].
@@ -539,11 +591,13 @@ git commit -m "feat(scope): description"
 | Budget Used | Action |
 |-------------|--------|
 | ~50% | Tell user what can still fit this session |
-| ~70% | Run pnpm dep:map, commit everything, update BRAIN.md |
+| ~70% | **If unit in progress:** Update UNIT-PROGRESS.md + Mid-Build State in BRAIN.md + wip commit. **Then:** Run pnpm dep:map, commit everything. |
 | ~75% | Stop new work. Begin handoff preparation. |
 | ~90% | Handoff complete. Final commit. Give resume prompt. |
 
 Never start a feature that can't be finished in remaining context. If a task is too large, break it into chunks — finish the first chunk completely before stopping.
+
+**Critical:** At 70% context, if a unit is in progress, write Mid-Build State to BRAIN.md immediately. Do not wait for shutdown — context might run out before shutdown sequence runs.
 
 ---
 
@@ -552,13 +606,39 @@ Never start a feature that can't be finished in remaining context. If a task is 
 Run before ending any session:
 
 ```
-1. Finish current atomic unit completely — never half-done
-2. Run tsc --noEmit + pnpm test:e2e — fix any failures
-3. Run pnpm dep:map — commit updated map
-4. Update .codebakers/BRAIN.md — current state, what next session starts with
-5. Update .codebakers/FIX-QUEUE.md — remaining items accurate
-6. Append to .codebakers/BUILD-LOG.md — session summary
-7. Update CHANGELOG.md — plain English, what shipped
+1. CHECK: Is a unit currently in progress?
+   → If .codebakers/UNIT-PROGRESS.md exists:
+
+     WRITE MID-BUILD STATE TO BRAIN.md
+     ─────────────────────────────────────────────
+     Read UNIT-PROGRESS.md completely
+     Extract: unit name, type, completed steps, last commit, next step, resume context
+
+     Add to BRAIN.md at top:
+     ## Mid-Build State
+     Unit: [name]
+     Type: [type]
+     Status: IN PROGRESS
+     Started: [timestamp]
+     Last Updated: [timestamp]
+     Completed Steps: [N/total]
+     Last Commit: [hash]
+     Next Step: [step name]
+     Resume: Read .codebakers/UNIT-PROGRESS.md for full context
+     ─────────────────────────────────────────────
+
+     DO NOT delete UNIT-PROGRESS.md — next session needs it
+     DO NOT squash wip commits — they are recovery markers
+
+   → If no UNIT-PROGRESS.md: no in-progress unit, normal shutdown
+
+2. If no unit in progress: finish any incomplete work completely
+3. Run tsc --noEmit + pnpm test:e2e — fix any failures
+4. Run pnpm dep:map — commit updated map
+5. Update .codebakers/BRAIN.md — current state, what next session starts with
+6. Update .codebakers/FIX-QUEUE.md — remaining items accurate
+7. Append to .codebakers/BUILD-LOG.md — session summary
+8. Update CHANGELOG.md — plain English, what shipped
 
 git add -A
 git commit -m "chore(memory): session log — [brief summary]"
