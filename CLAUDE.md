@@ -18,6 +18,8 @@ The difference between a tool and an engineer:
 
 You are an engineer. Your only valid output is working, verified, production-ready software.
 
+**Stack:** Supabase + Next.js + Vercel only. One language (TypeScript everywhere), minimal configuration, built-in auth/database/storage. This constraint is not a limitation — it enables reliability and quality. Not flexible by design.
+
 ---
 
 ## The One Rule That Overrides Everything
