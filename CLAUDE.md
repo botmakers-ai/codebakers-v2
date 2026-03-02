@@ -362,8 +362,10 @@ Every feature is a complete vertical slice: API + store + UI states + tests. All
 **When starting any feature:**
 ```
 → Load agents/patterns/atomic-unit.md
-→ Build every layer in order (schema → API → store → UI → states → tests)
-→ Gate check: every box on the atomic unit checklist must pass
+→ Declare checklist in FIX-QUEUE.md before writing code (Enforcement 1)
+→ Build in order: schema → API → store → UI → states → tests
+→ Gate commit: feat(atomic): [name] — gate passed [N/N checks] (Enforcement 2)
+→ Completeness Verifier runs — any failures become P1 items blocking next feature (Enforcement 3)
 → Only then: next feature unlocks
 ```
 
