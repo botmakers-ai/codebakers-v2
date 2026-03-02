@@ -252,6 +252,77 @@ export function CreateProjectForm() {
 }
 ```
 
+### Notification Pattern (Required)
+
+**NEVER use browser toast notifications. ALL feedback is inline.**
+
+❌ **BANNED:**
+- react-hot-toast
+- sonner
+- react-toastify
+- Any library that shows notifications in corners/edges of the browser
+
+✅ **REQUIRED:**
+- Inline success/error messages next to the action
+- Form validation feedback under the field
+- Banner notifications at top of current view (not global floating)
+- Loading states on the button itself
+- Error states in the component that triggered them
+
+**Example: Delete Account Flow**
+```typescript
+'use client';
+
+import { useState } from 'react';
+import { deleteAccount } from '@/lib/actions/account-actions';
+
+export function DeleteAccountButton({ accountId }: { accountId: string }) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [result, setResult] = useState<{ success?: string; error?: string } | null>(null);
+
+  async function handleDelete() {
+    setIsDeleting(true);
+    setResult(null);
+
+    const res = await deleteAccount(accountId);
+
+    setIsDeleting(false);
+    setResult(res);
+  }
+
+  return (
+    <div className="space-y-2">
+      <button
+        onClick={handleDelete}
+        disabled={isDeleting}
+        className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+      >
+        {isDeleting ? 'Deleting...' : 'Delete Account'}
+      </button>
+
+      {/* Inline feedback - appears right where the action happened */}
+      {result?.success && (
+        <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+          ✓ {result.success}
+        </p>
+      )}
+      {result?.error && (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          ✗ {result.error}
+        </p>
+      )}
+    </div>
+  );
+}
+```
+
+**Why inline only:**
+- User sees feedback exactly where they acted
+- No context switching to corner of screen
+- Feedback survives across tab switches
+- Accessible by default (screen readers read in document order)
+- No toast queue management or z-index hell
+
 ### Responsive Design Rules
 - Mobile-first: write base styles for mobile, add `md:` and `lg:` for larger screens
 - Breakpoints: `sm` (640px), `md` (768px), `lg` (1024px), `xl` (1280px)

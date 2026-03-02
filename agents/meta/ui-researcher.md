@@ -70,7 +70,35 @@ Search pattern libraries for this specific app type:
 "[app type] keyboard shortcuts standard"
 "[app type] empty state design"
 "[app type] loading state pattern"
+"[app type] inline notification patterns"
+"[app type] form validation UI"
+"[app type] success message design"
 ```
+
+**CRITICAL: Notification Pattern Research**
+
+Search specifically for inline notification patterns (NOT toast libraries):
+```bash
+"[app type] inline notification UI"
+"[app type] form validation patterns"
+"[competitor] error message design"
+"[app type] inline success feedback"
+```
+
+**NEVER research or recommend:**
+- Toast notifications
+- Snackbars
+- Corner notifications
+- react-hot-toast, sonner, react-toastify, or any browser toast library
+
+**Extract from research:**
+- Inline message styling (colors, borders, icons)
+- Positioning (below button, next to form field, banner at top of view)
+- Timing (instant, fade in/out, persist until dismissed)
+- Animation (slide, fade, scale)
+- Success/error/warning visual language
+
+All user feedback must appear inline where the action happened, not in browser corners.
 
 ### Step 4: Accessibility Research
 

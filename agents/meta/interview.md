@@ -388,6 +388,12 @@ INTEGRATIONS: [confirmed list]
 CONSTRAINTS: [confirmed list]
 ARCHITECTURAL DECISIONS: [confirmed list]
 
+UI STANDARDS (from UI-RESEARCH.md):
+  - Design era: [year extracted from research]
+  - Notification pattern: Inline only (no browser toasts)
+  - Loading states: On component (no global spinners)
+  - Success/error feedback: Inline where action happened
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Confirm to begin build?
 ```

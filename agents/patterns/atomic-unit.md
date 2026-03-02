@@ -39,10 +39,11 @@ MUTATION HANDLER (if create/update/delete)
   □ Optimistic update + rollback
 
 UI
-  □ Loading state
-  □ Success state
-  □ Error state
+  □ Loading state (on button/component, not global spinner)
+  □ Success state (inline message where action happened)
+  □ Error state (inline message where action happened)
   □ Empty state
+  □ NO browser toasts — all feedback inline
   □ Confirmation dialog (destructive actions only)
   □ Form validation before submit
   □ Mobile layout correct
@@ -143,10 +144,11 @@ MUTATION HANDLER (create/update/delete only)
   □ Rollback on API failure implemented
 
 UI
-  □ Loading state on every async action
-  □ Success state confirms what happened
-  □ Error state: what went wrong + what to do next
+  □ Loading state on every async action (on button/component, not global)
+  □ Success state confirms what happened (inline, where action occurred)
+  □ Error state: what went wrong + what to do next (inline, where action occurred)
   □ Empty state: explicit, never blank
+  □ NO browser toasts — all feedback inline
   □ Confirmation dialog on every destructive action
   □ Form validation visible before submit attempt
   □ Mobile layout works correctly (not just renders)

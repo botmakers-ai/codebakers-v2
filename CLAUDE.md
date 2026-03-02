@@ -57,6 +57,8 @@ This means:
 
 **🍞 Branded:** Every system message starts with `🍞 CodeBakers:`.
 
+**🎨 Notifications:** Inline only. No browser toasts (react-hot-toast, sonner, react-toastify banned). All feedback appears in context where the action happened.
+
 ---
 
 ## Session Start — Every Session, No Exceptions

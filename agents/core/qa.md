@@ -473,49 +473,53 @@ grep -rn "filter\|search\|sort" --include="*.test.ts" --include="*.test.tsx" src
 # 8. Verify all UI buttons are wired to real API routes
 grep -rn "onClick\|onSubmit" --include="*.tsx" src/ | grep -v "handler\|action\|mutation\|fetch"
 
-# V3 — RULES 9-17 (NEW — All Blocking)
+# 9. Ban browser toast libraries — all feedback must be inline
+grep -rn "react-hot-toast\|sonner\|react-toastify\|useToast\|toast\(" --include="*.ts" --include="*.tsx" --include="package.json" src/
+# NO browser toasts. Use inline success/error messages where the action happened.
 
-# 9. Ban .single() — use .maybeSingle() everywhere
+# V3 — RULES 10-18 (NEW — All Blocking)
+
+# 10. Ban .single() — use .maybeSingle() everywhere
 grep -rn "\.single()" --include="*.ts" --include="*.tsx" src/
 # .single() throws on empty result. Replace ALL with .maybeSingle()
 
-# 10. Detect commented-out auth checks
+# 11. Detect commented-out auth checks
 grep -rn "//.*middleware\|//.*auth.*check\|//.*protect\|TODO.*auth\|FIXME.*auth\|if.*false.*auth" \
   --include="*.ts" --include="*.tsx" src/
 # Any disabled auth = critical security issue
 
-# 11. Ban raw SQL execution
+# 12. Ban raw SQL execution
 grep -rn "executeRawUnsafe\|queryRawUnsafe\|\$queryRaw\`.*\$" --include="*.ts" src/
 # Direct SQL string interpolation = SQL injection risk
 
-# 12. Check mutations include user_id filter (not just id)
+# 13. Check mutations include user_id filter (not just id)
 grep -rn "\.update\b\|\.delete\b" --include="*.ts" src/lib src/app/api/
 # Each result: verify it has BOTH .eq('id', ...) AND .eq('user_id', ...) or org-level equivalent
 
-# 13. Dead dependency check
+# 14. Dead dependency check
 npx depcheck --ignores="@types/*,eslint-*,prettier-*" 2>/dev/null | grep -A5 "Unused dependencies"
 # Remove unused packages before launch
 
-# 14. TypeScript strict mode
+# 15. TypeScript strict mode
 grep '"strict"' tsconfig.json | grep -v false
 # Must be: "strict": true — fail if missing or false
 
-# 15. Detect await inside for loops (N+1 / bulk anti-pattern)
+# 16. Detect await inside for loops (N+1 / bulk anti-pattern)
 grep -rn "for\s*(.*)\s*{" --include="*.ts" -A5 src/ | grep "await "
 # Each hit: refactor to Promise.all() or batch query
 
-# 16. Detect unbounded setInterval
+# 17. Detect unbounded setInterval
 grep -rn "setInterval(" --include="*.ts" --include="*.tsx" src/
 # Every hit must have: a cleanup ref, max attempt counter, or error break condition
 
-# 17. Package version check
-node -e "const p=require('./package.json'); const deps={...p.dependencies,...p.devDependencies}; 
+# 18. Package version check
+node -e "const p=require('./package.json'); const deps={...p.dependencies,...p.devDependencies};
   const carets=Object.entries(deps).filter(([k,v])=>v.startsWith('^')||v.startsWith('~'));
   if(carets.length>0){console.log('UNPINNED:',carets.map(([k])=>k).join(', '));process.exit(1)}"
 # All versions must be pinned exactly — no ^ or ~
 ```
 
-**Gate is blocking.** The conductor does not allow moving to the next checkpoint until all 17 checks are clean.
+**Gate is blocking.** The conductor does not allow moving to the next checkpoint until all 18 checks are clean.
 
 ### V3: Coverage Thresholds (Enforced in Build)
 
