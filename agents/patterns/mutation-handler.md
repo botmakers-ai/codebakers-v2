@@ -18,6 +18,59 @@ Incomplete mutations are bugs by definition. They will surface in QA or producti
 
 ---
 
+## Why the Dependency Map System Exists
+
+This is the system that prevents the most common class of bugs in AI-built apps: **mutations that update the database but leave the UI in a broken, stale, or inconsistent state.**
+
+### The Problem Without It
+
+Claude Code has no built-in model of your app's data flow. When you say "delete account," it:
+1. Calls the API ✓
+2. Stops ✗
+
+It doesn't know that:
+- 5 stores reference that account
+- 8 components render it
+- Active state needs to switch
+- Messages belonging to that account should be cleared
+
+Every one of those missed updates is a bug. Users see deleted accounts still rendering. Clicking them throws "Cannot read property 'id' of undefined" errors.
+
+### The Solution: 3-Layer Enforcement
+
+**Layer 1 — The Generated Map (Source of Truth)**
+
+`.codebakers/DEPENDENCY-MAP.md` is written by a script (`pnpm dep:map`) that reads actual imports and store references from your codebase.
+
+**It cannot be wrong about what exists.** It can only be stale if not regenerated.
+
+**Layer 2 — Mandatory Regeneration Triggers**
+
+Run `pnpm dep:map` at these moments (no exceptions):
+
+| Trigger | When |
+|---------|------|
+| Before any @rebuild | Stage 0, always |
+| After any new store file created | Immediately |
+| After any new component that uses a store | Immediately |
+| After any mutation handler is implemented | Verify then commit |
+| Session start (if map is >24hrs old) | Before first task |
+| Before any audit | Before reading the codebase |
+
+**Layer 3 — Grep Verification at Task Time**
+
+The map is primary. Grep catches the delta since last regeneration (Step 2 below).
+
+If grep finds something not in the map → `pnpm dep:map` → proceed.
+
+---
+
+## The 4-Step Mutation Handler Process
+
+Every mutation follows this exact sequence. No exceptions.
+
+---
+
 ## Step 1: Read the Generated Dependency Map FIRST
 
 Before anything else:
