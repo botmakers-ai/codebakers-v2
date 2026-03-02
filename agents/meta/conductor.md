@@ -57,23 +57,58 @@ Run in order. Never skip steps.
    → This catches any new files added since last session
    → Then go to step 7
 
-5. NEW PROJECT — Skip refs processing for now (refs/ just created, empty)
-   Show this message and STOP completely:
+5. NEW PROJECT DETECTED — run this sequence:
 
-   "🍞 CodeBakers: New project detected.
+   a. Ask user for one-sentence description:
+      "🍞 CodeBakers: New project detected.
 
-   refs/ is ready. Add any reference files now if you have them —
-   PRDs, mockups, API docs, brand guidelines, schema files.
-   The more context you give me, the better the proposals.
+      Describe the app in one sentence:"
 
-   When ready to start: type @interview
-   Nothing to add right now? Just type @interview."
+      STOP. Wait for user's one-sentence response.
 
-   STOP. Do not proceed. Do not start interview automatically. Wait for @interview.
+   b. Load and run agents/meta/research-agent.md
+      → Pass the user's one-sentence description
+      → Research Agent researches domain, competitors, integrations, compliance
+      → Writes pattern files for anything missing
+      → Produces .codebakers/RESEARCH-SUMMARY.md and RESEARCH-LOG.md
+      → Wait for research to complete fully before continuing
+
+   c. Load and run agents/meta/ui-researcher.md
+      → Already informed by research findings in agents/research/[app-type].md
+      → Produces UI-RESEARCH.md with design tokens and patterns
+
+   d. Research Agent shows completion message and STOPS:
+      "🍞 CodeBakers: Research complete for [app name].
+
+      I researched:
+      → [domain] domain and compliance requirements
+      → [N] competitors: [names]
+      → [N] integrations: [names]
+
+      New pattern files written:
+      → [list]
+
+      Existing patterns loaded:
+      → [list]
+
+      Full findings: .codebakers/RESEARCH-SUMMARY.md
+
+      Now add files to refs/ before typing @interview:
+      → refs/design/    ← mockups (JSX or HTML)
+      → refs/brand/     ← logo, colors, brand guidelines
+      → refs/prd/       ← any requirements docs from client
+
+      When ready: type @interview"
+
+      STOP. Do not proceed. Do not start interview automatically. Wait for @interview.
 
 6. @interview triggered (new projects only):
    → Process refs/ first (catch anything user just added)
-   → Run Interview Agent — every proposal informed by ref files
+   → Run Interview Agent — every proposal informed by:
+      · RESEARCH-SUMMARY.md (domain, competitors, integrations, compliance)
+      · UI-RESEARCH.md (design patterns and tokens)
+      · All pattern files written/loaded by Research Agent
+      · All ref files processed from refs/
    → After interview contract confirmed: process refs/ again (catch any added during interview)
    → Begin build loop
 
@@ -257,7 +292,7 @@ Before executing any task — user command or queue item — load and run:
 → agents/meta/prompt-engineer.md
 ```
 
-Exempt: system commands (@rebuild, @interview, @status, @help, @depmap, @queue, @memory, @team, @launch, @assumptions, @expand)
+Exempt: system commands (@rebuild, @interview, @research, @status, @help, @depmap, @queue, @memory, @team, @launch, @assumptions, @expand, @ui, @fix, @flows, @agent)
 
 ---
 
@@ -603,6 +638,30 @@ When user says `@ui`, "run ui research", "update ui research", "ui standards":
 → Update or create UI-RESEARCH.md
 → If gaps found vs current implementation: add to FIX-QUEUE.md
 → Report: design era, key patterns, gaps identified
+```
+
+---
+
+## @research Routing
+
+When user says `@research`, "run research", "update research", "research domain":
+
+```
+→ Load agents/meta/research-agent.md
+→ Re-run full research workflow (Steps 2-7):
+   · Check for new competitors that didn't exist before
+   · Check for API changes since last research (version updates, new endpoints)
+   · Update all pattern files with new findings (append updates section with timestamp)
+   · Update .codebakers/RESEARCH-SUMMARY.md
+→ Report what changed:
+   "🍞 CodeBakers: Research updated.
+
+   Changes found:
+   → [New competitor X launched — added to research/[app-type].md]
+   → [Integration Y released v2 API — updated patterns/[integration].md]
+   → [No compliance changes found]
+
+   Updated: .codebakers/RESEARCH-SUMMARY.md"
 ```
 
 ---
