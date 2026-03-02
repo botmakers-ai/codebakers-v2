@@ -24,32 +24,57 @@ The one exception: two questions only the human can answer (differentiator + suc
 
 ---
 
-## Phase 0: Research Before Anything
+## Phase 0: Load Existing Research
 
-The human gives you one sentence. Before presenting a single block, do this research silently:
+**Before Interview Agent runs, Research Agent and UI Researcher have already completed their work.**
+
+Before presenting a single block, load all existing research:
 
 ```
-1. Load agents/meta/ui-researcher.md
-   → Run full UI research for this app type
-   → Produces UI-RESEARCH.md with design tokens, component inventory,
-     interaction patterns, loading/error standards, accessibility requirements
-   → This feeds every proposal in phases below
+1. Read .codebakers/RESEARCH-SUMMARY.md completely
+   → Domain knowledge, compliance requirements
+   → Top 5 competitors (features, strengths, weaknesses, gaps)
+   → All integrations needed (APIs, gotchas, rate limits)
+   → Technical problems identified
+   → What makes this app different (the gap competitors don't fill)
 
-2. Web search: "[app type] software features"
-3. Web search: "best [app type] software [industry]"
-4. Web search: "[top competitor 1] features"
-5. Web search: "[top competitor 2] features"
-6. Identify: common entities, user types, standard flows, known pain points
-7. Identify: what the leading products do well and where they fall short
+2. Read UI-RESEARCH.md completely
+   → Design era and patterns for this app type
+   → Component inventory and interaction patterns
+   → Design tokens (colors, typography, spacing)
+   → Loading/error/empty state standards
+   → Accessibility requirements
+
+3. List and scan all pattern files written by Research Agent:
+   → ls agents/patterns/*.md (integrations, architectures)
+   → ls agents/compliance/*.md (domain compliance)
+   → ls agents/research/*.md (competitor analysis)
+   → Skim each to know what patterns exist
+
+4. Process refs/ (Conductor already did this, but verify):
+   → refs/design/ — mockups (JSX/HTML staff mockups are binding contracts)
+   → refs/brand/ — brand guidelines override UI-RESEARCH.md defaults
+   → refs/prd/ — requirements and constraints
+   → refs/api/ — integration specs
 ```
+
+**You now have:**
+- Complete domain and competitor knowledge (Research Agent)
+- Complete UI standards for this app type (UI Researcher)
+- All reference materials (refs/ processing)
 
 Use this research to make every proposal specific and informed — not generic.
 
-Log what you found:
+Log what you loaded:
 ```
-🍞 CodeBakers: Researching [app type] domain...
-Found: [competitor 1], [competitor 2], [competitor 3]
-Common patterns: [list]
+🍞 CodeBakers: Loaded research findings.
+
+Domain: [industry] — [key compliance requirements]
+Competitors: [N] analyzed — [top 3 names]
+Differentiator identified: [what none of them do from RESEARCH-SUMMARY.md]
+UI standards: [design era] — [key patterns]
+Pattern files: [N] loaded
+
 Ready to propose.
 ```
 
@@ -57,41 +82,58 @@ Ready to propose.
 
 ## Phase 1: Competitive Landscape
 
-Present what exists. Frame it as context, not a question.
+Present findings from RESEARCH-SUMMARY.md. Frame it as context, not a question.
+
+**Pull from RESEARCH-SUMMARY.md section: "What the Best Competitors Do"**
 
 ```
-🍞 CodeBakers: Here's the competitive landscape for [app type]:
+🍞 CodeBakers: Here's what I found researching [app type]:
 
 EXISTING SOLUTIONS
 ─────────────────────────────────────────────
-□ [Competitor 1] — [what it does, key strength, key weakness]
-□ [Competitor 2] — [what it does, key strength, key weakness]
-□ [Competitor 3] — [what it does, key strength, key weakness]
+□ [Competitor 1] — [what it does, key strength, key weakness from research]
+□ [Competitor 2] — [what it does, key strength, key weakness from research]
+□ [Competitor 3] — [what it does, key strength, key weakness from research]
+□ [Competitor 4] — [what it does, key strength, key weakness from research]
+□ [Competitor 5] — [what it does, key strength, key weakness from research]
 
-Common strengths across all: [list]
-Common complaints across all: [list]
+Common strengths across all: [from RESEARCH-SUMMARY.md]
+Common complaints across all: [from RESEARCH-SUMMARY.md]
+What none of them do well: [from RESEARCH-SUMMARY.md — "What None of Them Do Well"]
 ─────────────────────────────────────────────
-Is this an accurate picture of what's out there?
+Is this an accurate picture? Anything missing?
 Confirm / Correct
 ```
 
 ---
 
-## Phase 2: The Differentiator (Human Must Answer)
+## Phase 2: The Differentiator (Human Must Confirm)
 
-This is one of two questions only the human can answer.
+**Pull from RESEARCH-SUMMARY.md section: "What None of Them Do Well"**
+
+Research Agent identified the gap. Now get human confirmation or correction.
 
 ```
-🍞 CodeBakers: One question only you can answer:
+🍞 CodeBakers: Based on competitor research, here's the differentiator I'm proposing:
 
-What does this app need to do that existing solutions don't — 
-or do significantly better?
+DIFFERENTIATOR
+─────────────────────────────────────────────
+[Pull from RESEARCH-SUMMARY.md:
+ "What the best version of this app does that none of them do yet"]
 
+Example:
+"An email client that understands legal workflows — auto-tags emails
+by matter, checks conflicts before sending, tracks billable time
+automatically, and enforces ethical walls. All without slowing down
+the core email experience."
+─────────────────────────────────────────────
 This becomes the north star for every build decision.
-(If the answer is "nothing, just cheaper/simpler" — that's a valid answer.)
+
+Is this the right differentiator?
+Confirm / Change / Add to it
 ```
 
-Record the answer verbatim in `project-profile.md` as `DIFFERENTIATOR:`.
+Record the final version verbatim in `project-profile.md` as `DIFFERENTIATOR:`.
 Every tradeoff decision during the build references this.
 
 ---

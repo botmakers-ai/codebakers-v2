@@ -76,8 +76,9 @@ Run in order. Never skip steps.
    c. Load and run agents/meta/ui-researcher.md
       → Already informed by research findings in agents/research/[app-type].md
       → Produces UI-RESEARCH.md with design tokens and patterns
+      → Wait for UI Researcher to complete fully before continuing
 
-   d. Research Agent shows completion message and STOPS:
+   d. Conductor shows completion message and STOPS:
       "🍞 CodeBakers: Research complete for [app name].
 
       I researched:

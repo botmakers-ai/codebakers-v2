@@ -1,6 +1,6 @@
 # Agent: UI Researcher
 # CodeBakers V4 | agents/meta/ui-researcher.md
-# Trigger: Interview Phase 0 | @rebuild Stage 0c | @ui command
+# Trigger: After Research Agent on new projects | @rebuild Stage 0c | @ui command
 
 ---
 
@@ -16,9 +16,11 @@ You do not invent UI decisions. You discover them from research and apply them.
 
 ## When You Fire
 
-- **New project:** Runs during Interview Phase 0, before any proposal is made
+- **New project:** Runs automatically AFTER Research Agent completes, BEFORE @interview
 - **@rebuild:** Runs as Stage 0c, after dep map, before audit
 - **@ui:** Manual trigger — re-run research and update UI-RESEARCH.md anytime
+
+**Important:** On new projects, Research Agent runs first and produces `agents/research/[app-type].md` with competitor analysis. UI Researcher reads this and focuses on UI-specific patterns, not re-researching competitors.
 
 ---
 
@@ -35,15 +37,33 @@ Primary device: [desktop / mobile / both]
 Usage frequency: [daily power user / occasional / etc.]
 ```
 
-### Step 2: Competitive Research
+### Step 2: Load Existing Competitive Research (if available)
 
-Search for the best-in-class products for this app type. Go deep — not just feature lists but actual UI decisions, interaction patterns, and what users love and hate.
+**FIRST: Check if Research Agent already researched competitors.**
 
 ```bash
-# Run all of these searches
+# Check for existing research file
+ls agents/research/*.md
+```
+
+**If `agents/research/[app-type].md` exists:**
+- Read it completely
+- Research Agent already analyzed top 5 competitors with features, strengths, weaknesses, gaps
+- Use this as your starting point — do NOT duplicate competitor research
+- Focus your searches on UI/UX specifics that Research Agent didn't cover
+
+**If NO research file exists (mid-project @ui command):**
+- Run full competitive research below
+
+### Step 2b: Competitive UI Research
+
+Search for UI-specific details. If Research Agent file exists, focus on visual/interaction patterns only.
+
+```bash
+# Run these searches for UI-specific research
 "best [app type] UI design 2025 2026"
 "[app type] UX patterns"
-"[competitor 1] UI design decisions"
+"[competitor 1] UI design decisions"  # use competitors from Research Agent
 "[competitor 2] vs [competitor 3] UX comparison"
 "[app type] design system"
 "[app type] Dribbble"
@@ -53,11 +73,12 @@ Search for the best-in-class products for this app type. Go deep — not just fe
 "[app type] mobile UX"
 ```
 
-For each competitor found, extract:
-- What they do exceptionally well
-- What users complain about
+**Extract (UI-specific, not feature lists):**
 - Key UI decisions that define their experience
 - Interaction patterns that feel native to this app type
+- Visual hierarchy and layout patterns
+- Animation and transition styles
+- What users love/hate about the UI specifically (not features)
 
 ### Step 3: UI Pattern Research
 
