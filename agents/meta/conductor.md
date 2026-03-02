@@ -173,9 +173,30 @@ Run in order. Never skip steps.
    → If no Mid-Build State: normal startup (go to step 8)
 
 8. Greet with actual state:
+   → Read BUILD MODE from BRAIN.md
+   → If INTERACTIVE: wait for user to pick next feature
+   → If AUTONOMOUS: resume build loop automatically
+
+   INTERACTIVE greeting:
    "🍞 CodeBakers: active. Project: [name].
+   Mode: Interactive
+   Progress: [N/total] features complete
+   Last completed: [feature name]
+
+   Remaining features:
+   → [next feature 1]
+   → [next feature 2]
+   → [next feature 3]
+
+   Pick next feature to build, or type:
+   → 'Switch to autonomous' (build rest without stopping)
+   → '@status' (see all flows)"
+
+   AUTONOMOUS greeting:
+   "🍞 CodeBakers: active. Project: [name].
+   Mode: Autonomous
    [N] fixes remaining. Last action: [from BUILD-LOG].
-   Resuming: [from BRAIN.md]."
+   Resuming build loop now..."
 ```
 
 ---
@@ -272,11 +293,12 @@ After the Interview Agent completes and produces FLOWS.md:
 5. Break every flow into atomic units
 6. Dependency-order the units (what must exist before what)
 7. Write initial FIX-QUEUE.md with every unit as an ordered item
-8. Present build plan to user — confirm before starting
-9. Begin build loop (see below)
+8. Present build plan to user
+9. Ask: Interactive or Autonomous mode?
+10. Begin build loop in selected mode
 ```
 
-**Build plan format:**
+**Build plan + mode selection format:**
 ```
 🍞 CodeBakers: Here's the build plan for [project name].
 
@@ -287,16 +309,99 @@ Build order based on dependencies:
 2. [Unit] — [depends on 1]
 3. [Unit] — [depends on 1+2]
 ...
+[list all units]
 
-Starting with unit 1 now. No further input needed until complete.
-Confirm / Change order?
+─────────────────────────────────────────────
+How do you want to build this?
+
+INTERACTIVE MODE
+  → I build one feature at a time
+  → You test each feature before I start the next
+  → You pick which feature to build next
+  → You can stop at MVP if you want
+  → Recommended for: first CodeBakers build, mission-critical apps
+
+AUTONOMOUS MODE
+  → I build all features sequentially without stopping
+  → You come back to a complete app
+  → Faster, but you don't see progress between features
+  → Recommended for: prototypes, internal tools, experienced users
+
+Choose: Interactive / Autonomous
+─────────────────────────────────────────────
+```
+
+**Record choice in BRAIN.md:**
+```markdown
+BUILD MODE: [Interactive | Autonomous]
 ```
 
 ---
 
 ## The Build Loop
 
-This runs autonomously after build plan is confirmed. No human input needed.
+Behavior depends on mode selected during setup.
+
+### Interactive Mode Build Loop
+
+User-paced. Conductor waits for user to pick each feature.
+
+```
+Wait for user to pick feature
+  ↓
+User: "Build [feature name from FLOWS.md]"
+  ↓
+PROMPT EXPANSION (agents/meta/prompt-engineer.md)
+  → Read dep map for entity
+  → Identify applicable patterns
+  → Write full internal execution prompt
+  → Execute against the expansion, never the raw item
+  ↓
+Build atomic unit (agents/patterns/atomic-unit.md)
+  → schema → API → store → UI → states → tests
+  → Declare checklist in FIX-QUEUE.md before coding
+  ↓
+Gate check
+  → All checklist boxes checked?
+  → PASS: gate commit → Completeness Verifier
+  → FAIL: add failures as P1 items → Fix Executor → gate check again
+  ↓
+Completeness Verifier (automatic)
+  → Real user can complete this flow?
+  → PASS: mark feature complete in FLOWS.md
+  → FAIL: add failures as P1 → Fix Executor → verify again
+  ↓
+Report to user:
+  "🍞 CodeBakers: Feature complete — [feature name]
+
+   What was built:
+   ✓ [layer 1]
+   ✓ [layer 2]
+   ...
+
+   Status: [N/total] features complete
+   Remaining: [list next 3 features from FLOWS.md]
+
+   Test this feature. When ready, pick next:
+   → 'Build [next feature name]'
+   → Or: 'Switch to autonomous mode' (build rest without stopping)"
+  ↓
+Wait for next user command
+  → If "Build [feature]": repeat loop
+  → If "Switch to autonomous": goto Autonomous Mode Build Loop
+  → If "Done" / "Stop": end session, update BRAIN.md
+```
+
+**In interactive mode:**
+- User controls pacing
+- Can test between features
+- Can stop at MVP
+- Can course-correct based on what they see
+- Can switch to autonomous mid-build
+
+### Autonomous Mode Build Loop
+
+Runs without stopping until all features complete.
 
 ```
 Pull next item from FIX-QUEUE.md
@@ -334,7 +439,40 @@ Queue empty + all flows verified
   → All pass → build complete
 ```
 
-Nothing in this loop requires human input.
+**In autonomous mode:**
+- No user input needed
+- Builds all features sequentially
+- User comes back to complete app
+- Faster but less control
+
+### Switching Modes Mid-Build
+
+**From Interactive to Autonomous:**
+```
+User (during interactive build): "Switch to autonomous mode"
+
+Conductor:
+→ Update BRAIN.md: BUILD MODE: Autonomous
+→ Continue building remaining features without stopping
+→ Report when all complete
+```
+
+**From Autonomous to Interactive:**
+```
+User (during autonomous build): "Stop" or "Switch to interactive"
+
+Conductor:
+→ Finish current atomic unit completely (never stop mid-unit)
+→ Update BRAIN.md: BUILD MODE: Interactive
+→ Report: "Paused. [N/total] complete. Pick next feature when ready."
+→ Wait for user to pick next feature
+```
+
+**Resuming after context reset:**
+- BRAIN.md records current mode
+- Next session reads mode and resumes in that mode
+- Interactive → waits for user
+- Autonomous → continues building
 
 ---
 

@@ -134,10 +134,23 @@ Interview Agent (only human moment)
   → Produces: project-profile.md, FLOWS.md, CREDENTIALS-NEEDED.md
   → Initializes: .codebakers/BRAIN.md
   → Runs: pnpm dep:map (initial empty map)
-  → After this: fully autonomous
+  → After this: ask user which build mode
 
-Build Loop (no humans)
-  → Conductor builds from FLOWS.md
+Build Mode Selection (user chooses)
+  → INTERACTIVE: User picks features one at a time, tests between each
+  → AUTONOMOUS: System builds all features from FLOWS.md without stopping
+
+Build Loop — Interactive Mode (user-paced)
+  → User: "Build [feature name]"
+  → Conductor builds that atomic unit from FLOWS.md
+  → After every new store or component: pnpm dep:map
+  → After feature complete: Completeness Verifier
+  → "Feature complete. Test it. Pick next when ready."
+  → User tests, then picks next feature
+  → Repeat until user says done or all flows complete
+
+Build Loop — Autonomous Mode (no humans)
+  → Conductor builds from FLOWS.md sequentially
   → After every new store or component: pnpm dep:map
   → After every feature: Completeness Verifier
   → After every 2 features: Integration Verifier
@@ -145,6 +158,25 @@ Build Loop (no humans)
   → Queue empty + flows verified: Pre-Launch Checklist
   → Pre-launch passes: done
 ```
+
+### Which Build Mode Should You Choose?
+
+**Choose INTERACTIVE if:**
+- First time using CodeBakers
+- Want to test each feature before building the next
+- Want to course-correct based on what you see
+- Building something mission-critical (can't afford to rebuild)
+- Unsure if the Interview captured everything correctly
+- Want to stop at MVP (don't need all features)
+
+**Choose AUTONOMOUS if:**
+- You've built with CodeBakers before and trust the system
+- FLOWS.md is exactly what you want (no adjustments needed)
+- Building internal tool or prototype (can afford to iterate)
+- Want to see the full app and then refine
+- Comfortable with potentially rebuilding features if interview missed something
+
+**Default recommendation:** Interactive for first 2-3 builds, then autonomous once you trust the pattern.
 
 ---
 
