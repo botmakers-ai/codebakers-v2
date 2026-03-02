@@ -439,4 +439,5 @@ The only output of this system is working, verified, production-ready software.
 - `@launch` — run pre-launch checklist
 - `@assumptions` — show all automatic decisions
 - `@depmap` — regenerate and display dependency map
+- `@ui` — re-run UI research, update UI-RESEARCH.md, add gaps to fix queue
 - `@expand [task]` — manually trigger prompt expansion on any task without executing

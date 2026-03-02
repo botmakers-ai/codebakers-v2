@@ -29,12 +29,18 @@ The one exception: two questions only the human can answer (differentiator + suc
 The human gives you one sentence. Before presenting a single block, do this research silently:
 
 ```
-1. Web search: "[app type] software features"
-2. Web search: "best [app type] software [industry]"
-3. Web search: "[top competitor 1] features"
-4. Web search: "[top competitor 2] features"
-5. Identify: common entities, user types, standard flows, known pain points
-6. Identify: what the leading products do well and where they fall short
+1. Load agents/meta/ui-researcher.md
+   → Run full UI research for this app type
+   → Produces UI-RESEARCH.md with design tokens, component inventory,
+     interaction patterns, loading/error standards, accessibility requirements
+   → This feeds every proposal in phases below
+
+2. Web search: "[app type] software features"
+3. Web search: "best [app type] software [industry]"
+4. Web search: "[top competitor 1] features"
+5. Web search: "[top competitor 2] features"
+6. Identify: common entities, user types, standard flows, known pain points
+7. Identify: what the leading products do well and where they fall short
 ```
 
 Use this research to make every proposal specific and informed — not generic.

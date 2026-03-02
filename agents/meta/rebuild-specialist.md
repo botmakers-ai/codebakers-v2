@@ -18,6 +18,7 @@ Execute every stage in order. Never skip a stage. Never ask for permission betwe
 
 ```
 Stage 0: Branch + Generate Dependency Map  ← ALWAYS FIRST
+Stage 0b: UI Research + Standards Audit
 Stage 1: Read Everything
 Stage 2: Reconstruct Intent
 Stage 3: Full Audit
@@ -92,6 +93,32 @@ Entities found: [N]
 Stores found: [N]
 Store-connected components: [N]
 Map location: .codebakers/DEPENDENCY-MAP.md
+```
+
+---
+
+## Stage 0b: UI Research + Standards Audit
+
+Runs immediately after dep map generation, before reading any code.
+
+```
+→ Load agents/meta/ui-researcher.md
+→ Run full UI research for this app type
+→ If UI-RESEARCH.md already exists: update it, note what changed
+→ If missing: create it from scratch
+→ Run Rebuild UI Audit section against current implementation
+→ Add all findings to audit queue for Stage 3
+```
+
+This means every rebuild also modernizes the UI against current standards — not just fixes bugs.
+
+Log:
+```
+[Stage 0b Complete]
+UI research complete for: [app type]
+UI-RESEARCH.md: [created / updated]
+UI audit findings: [N] (added to Stage 3 audit)
+Design era assessment: current=[year] standard=[year]
 ```
 
 ---
