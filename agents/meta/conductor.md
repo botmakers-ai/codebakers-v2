@@ -973,6 +973,195 @@ When user says `@research`, "run research", "update research", "research domain"
 
 ---
 
+## @help Routing
+
+When user says `@help`, "help", "show commands", "what can you do":
+
+```
+→ Read CLAUDE.md commands section
+→ Display all available commands with descriptions
+→ Format clearly with command name, usage, and purpose
+```
+
+---
+
+## @interview Routing
+
+When user says `@interview`, "start interview", "new project interview":
+
+```
+→ Check for BRAIN.md
+→ If exists: "🍞 CodeBakers: Project already initialized. BRAIN.md exists."
+→ If missing: Load agents/meta/interview.md and execute
+→ Interview produces: project-profile.md, FLOWS.md, CREDENTIALS-NEEDED.md, BRAIN.md
+→ After interview: Present build plan + mode selection (interactive vs autonomous)
+```
+
+---
+
+## @memory Routing
+
+When user says `@memory`, "show memory", "show brain", "project state":
+
+```
+→ Read .codebakers/BRAIN.md
+→ Display:
+  · Project name and status
+  · Build mode (Interactive/Autonomous)
+  · Differentiator
+  · Success metrics
+  · Current task and next action
+  · Never-dos
+  · Key architectural decisions
+→ If missing: "🍞 CodeBakers: No project memory. Run @interview to initialize."
+```
+
+---
+
+## @queue Routing
+
+When user says `@queue`, "show queue", "what's in queue", "fix queue":
+
+```
+→ Read .codebakers/FIX-QUEUE.md
+→ Display grouped by priority:
+  · P0 (critical - blocks everything)
+  · P1 (high - blocks new features)
+  · P2 (nice to have)
+  · Blocked (waiting on dependency)
+→ Show: total count, in-progress items, completed count
+→ If missing: "🍞 CodeBakers: No fix queue. Run @rebuild to generate."
+```
+
+---
+
+## @status Routing
+
+When user says `@status`, "show status", "where are we", "progress":
+
+```
+→ Read: FLOWS.md, FIX-QUEUE.md, BRAIN.md, BUILD-LOG.md
+→ Report:
+  · FLOWS: [N/total] complete
+  · FIX-QUEUE: [N] items ([N] P0, [N] P1, [N] P2)
+  · Build mode: [Interactive/Autonomous]
+  · Last action: [from BUILD-LOG]
+  · Next action: [from BRAIN]
+  · Blockers: [if any]
+→ If new project: "🍞 CodeBakers: New project. Run @interview to start."
+```
+
+---
+
+## @team Routing
+
+When user says `@team`, "show agents", "list agents", "what agents exist":
+
+```
+→ List all agents from agents/ directory
+→ Group by:
+  · Meta Agents (agents/meta/)
+  · Pattern Agents (agents/patterns/)
+→ Show each agent with one-line description
+→ Note: "To load specific agent: @agent [name]"
+```
+
+---
+
+## @launch Routing
+
+When user says `@launch`, "pre-launch", "launch checklist", "ready for production":
+
+```
+→ Run pre-launch checklist:
+  □ All env vars in .env.example
+  □ Error boundaries at route level
+  □ 404/500 pages exist
+  □ Mobile tested
+  □ Auth flows tested
+  □ Rate limiting on public routes
+  □ No console.log in production
+  □ Lighthouse score > 90
+  □ All tests passing
+  □ DEPENDENCY-MAP.md current
+  □ tsc --noEmit clean
+  □ All FLOWS verified
+→ Report: [N/12] passed
+→ Failures → add to FIX-QUEUE as P0
+→ All pass → "🍞 CodeBakers: Production-ready."
+```
+
+---
+
+## @assumptions Routing
+
+When user says `@assumptions`, "show assumptions", "what decisions did you make", "automatic decisions":
+
+```
+→ Read .codebakers/ASSUMPTIONS.md
+→ Display all automatic decisions with:
+  · Date/time
+  · Decision made
+  · Context
+  · Reasoning
+  · Alternatives considered
+  · Reversibility
+→ If missing: "🍞 CodeBakers: No assumptions documented yet."
+```
+
+---
+
+## @depmap Routing
+
+When user says `@depmap`, "dependency map", "regenerate map", "show dependencies":
+
+```
+→ Run: pnpm dep:map
+→ Read and display .codebakers/DEPENDENCY-MAP.md:
+  · Entity → Store → Component Map
+  · Store Inventory
+  · Component → Store Usage
+→ Report: [N] entities, [N] stores, [N] components
+→ Last generated: [timestamp]
+→ If dep:map not installed: Run setup from CLAUDE.md first
+```
+
+---
+
+## @refs Routing
+
+When user says `@refs`, "process refs", "process reference files":
+
+```
+→ Check refs/ for new files (not in .refs-processed)
+→ For each new file:
+  · refs/prd/: Extract requirements → update BRAIN.md, cross-ref FLOWS.md
+  · refs/design/: Extract design → update UI-RESEARCH.md, create DESIGN-CONTRACT.md
+  · refs/api/: Extract API specs → update BRAIN.md, CREDENTIALS-NEEDED.md
+  · refs/brand/: Extract brand → override UI-RESEARCH.md
+  · refs/schema/: Extract schema → cross-ref project-profile.md
+  · refs/other/: Read and summarize → update BRAIN.md
+→ Append to .refs-processed
+→ Commit: chore(refs): process [files]
+→ Report: [N] files processed - [what was extracted]
+```
+
+---
+
+## @expand Routing
+
+When user says `@expand [task]`, "expand this task", "show expansion":
+
+```
+→ Load agents/meta/prompt-engineer.md
+→ Pass task description
+→ Generate full internal execution prompt
+→ Display expanded prompt (don't execute)
+→ Ask: "Execute this? Yes / No / Modify"
+```
+
+---
+
 ## Communication Rules
 
 - Every system message starts with `🍞 CodeBakers:`

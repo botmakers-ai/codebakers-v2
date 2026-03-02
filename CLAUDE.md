@@ -454,6 +454,10 @@ The only output of this system is working, verified, production-ready software.
 
 ## Commands
 
+**All commands work as slash commands in Claude Code.** Type `@` to see the full list.
+
+Commands also work in plain English (e.g., "rebuild this app", "show me the flows").
+
 - `@help` — show all available commands with descriptions
 - `@rebuild` — creates a `rebuild/[date]` branch, then runs full autonomous pipeline: dep map → read → reconstruct intent → audit → fix → verify → report. Merge when satisfied. Your working branch is never touched.
 - `@interview` — start project interview (new projects)
