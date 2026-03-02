@@ -49,8 +49,15 @@ Run in order. Never skip steps.
    Type @refs anytime after adding new files."
 
 3. Check for .codebakers/BRAIN.md
-   → EXISTS: existing project — go to step 4
+   → EXISTS: existing project — go to step 3.5
    → MISSING: new project — skip to step 5
+
+3.5. AUTO-VERIFY BRAIN.md CONSISTENCY (Silent — runs automatically)
+   → Run BRAIN.md Auto-Reconciliation (see section below)
+   → Detects drift between BRAIN.md and actual codebase
+   → Auto-fixes silently (low drift) or alerts user (high drift)
+   → Runs in < 1 second
+   → Then go to step 4
 
 4. EXISTING PROJECT — Process refs/ now:
    → Run Refs Processing (see section below)
@@ -293,6 +300,267 @@ Always use vision for image and PDF files. Visual refs are the most valuable inp
 
 ---
 
+## BRAIN.md Auto-Reconciliation System
+
+**Triggers:** Step 3.5 of startup sequence (every session, automatic)
+
+**Purpose:** Detect drift between BRAIN.md state and actual codebase. Auto-fix silently when possible, alert user only when necessary.
+
+### Step 1: Quick Drift Detection (< 1 second)
+
+```bash
+# Check BRAIN.md exists and is readable
+if [ ! -f .codebakers/BRAIN.md ]; then
+  # New project, skip verification
+  exit 0
+fi
+
+# Entity count drift
+brain_entities=$(grep -c "^- " .codebakers/BRAIN.md 2>/dev/null || echo 0)
+code_entities=$(find src/app/api -maxdepth 1 -type d 2>/dev/null | tail -n +2 | wc -l)
+entity_drift=$((code_entities - brain_entities))
+
+# Store count drift
+if [ -f .codebakers/DEPENDENCY-MAP.md ]; then
+  brain_stores=$(grep -c "^### use" .codebakers/DEPENDENCY-MAP.md 2>/dev/null || echo 0)
+else
+  brain_stores=0
+fi
+code_stores=$(find src/stores -name "*.ts" 2>/dev/null | wc -l)
+store_drift=$((code_stores - brain_stores))
+
+# Staleness check (BRAIN.md modified date vs latest git commit)
+if command -v stat >/dev/null 2>&1; then
+  brain_timestamp=$(stat -c %Y .codebakers/BRAIN.md 2>/dev/null || stat -f %m .codebakers/BRAIN.md 2>/dev/null)
+  git_timestamp=$(git log -1 --format=%ct 2>/dev/null || echo 0)
+  age_gap=$((git_timestamp - brain_timestamp))
+  # Stale if BRAIN.md > 5 days older than latest commit
+  is_stale=$((age_gap > 432000))
+else
+  is_stale=0
+fi
+
+# Git conflict check
+if grep -q "<<<<<<< HEAD" .codebakers/BRAIN.md 2>/dev/null; then
+  has_conflict=1
+else
+  has_conflict=0
+fi
+
+# Check for required fields
+if ! grep -q "ONBOARDING_COMPLETE:" .codebakers/BRAIN.md 2>/dev/null; then
+  missing_fields=1
+else
+  missing_fields=0
+fi
+```
+
+### Step 2: Severity Classification
+
+```
+SEVERITY: HIGH (requires user confirmation)
+- has_conflict == 1  OR
+- missing_fields == 1  OR
+- (abs(entity_drift) > 5 AND abs(store_drift) > 5)
+
+SEVERITY: MEDIUM (auto-fix with notice)
+- abs(entity_drift) >= 3  OR
+- abs(store_drift) >= 3  OR
+- is_stale == 1
+
+SEVERITY: LOW (auto-fix silently)
+- abs(entity_drift) <= 2  OR
+- abs(store_drift) <= 2
+
+SEVERITY: NONE
+- No drift detected
+```
+
+### Step 3: Auto-Reconciliation Actions
+
+**HIGH SEVERITY:**
+```
+1. Backup BRAIN.md
+   cp .codebakers/BRAIN.md .codebakers/BRAIN.md.backup.$(date +%s)
+
+2. Regenerate from code (see regeneration logic below)
+
+3. Alert user:
+   "🍞 CodeBakers: BRAIN.md was corrupted/conflicted.
+
+   I regenerated it from your codebase. Please review:
+
+   Detected state:
+   → [N] entities: [list from src/app/api/*/ scan]
+   → [N] stores: [list from src/stores/*.ts scan]
+   → Build mode: [detected from git log pattern]
+   → Last action: [from BUILD-LOG.md last line]
+
+   Does this look correct?
+   [Yes, continue / No, let me fix manually]"
+
+4. Wait for user confirmation
+   → If "Yes": proceed normally
+   → If "No": stop, let user fix BRAIN.md manually
+```
+
+**MEDIUM SEVERITY:**
+```
+1. Backup BRAIN.md
+   cp .codebakers/BRAIN.md .codebakers/BRAIN.md.backup.$(date +%s)
+
+2. Regenerate from code (preserve user preferences)
+
+3. Brief notice:
+   "🍞 CodeBakers: BRAIN.md updated from codebase (was stale). Backup saved."
+
+4. Proceed automatically
+```
+
+**LOW SEVERITY:**
+```
+1. Scan codebase, update BRAIN.md counts inline
+
+2. Log to BUILD-LOG.md:
+   echo "[$(date)] Auto-reconciled BRAIN.md: $entity_drift entities, $store_drift stores adjusted" >> .codebakers/BUILD-LOG.md
+
+3. Proceed silently (no user notification)
+```
+
+### Step 4: BRAIN.md Regeneration Logic
+
+**When to regenerate:** MEDIUM or HIGH severity
+
+**Process:**
+
+```
+1. Backup existing BRAIN.md
+   cp .codebakers/BRAIN.md .codebakers/BRAIN.md.backup.$(date +%s)
+
+2. Read old BRAIN.md, extract USER PREFERENCES to preserve:
+   - ONBOARDING_COMPLETE
+   - USER_ROLE
+   - GUIDED_MODE
+   - BUILD_MODE
+   - QUALITY_LEVEL
+   - ANNOUNCEMENTS_SHOWN
+   - DIFFERENTIATOR
+   - SUCCESS
+   - NEVER-DOS
+
+3. Scan codebase for CURRENT STATE:
+
+   # Detect entities (API route directories)
+   entities=$(find src/app/api -maxdepth 1 -type d 2>/dev/null | tail -n +2 | xargs -n1 basename | sort)
+
+   # Detect stores
+   stores=$(find src/stores -name "*.ts" 2>/dev/null | xargs -n1 basename | sed 's/.ts$//' | sort)
+
+   # Detect flows (from FLOWS.md if exists)
+   if [ -f FLOWS.md ]; then
+     flows=$(grep "^# " FLOWS.md | sed 's/^# //')
+     flow_count=$(echo "$flows" | wc -l)
+   else
+     flows=""
+     flow_count=0
+   fi
+
+   # Detect build mode from git commit history
+   # Look for "wip(...)" pattern = Interactive
+   # Look for "feat(atomic):" only = Autonomous
+   recent_commits=$(git log --oneline -20 --format=%s)
+   if echo "$recent_commits" | grep -q "wip("; then
+     detected_build_mode="Interactive"
+   else
+     detected_build_mode="Autonomous"
+   fi
+
+   # Detect last action (from BUILD-LOG.md)
+   if [ -f .codebakers/BUILD-LOG.md ]; then
+     last_action=$(tail -1 .codebakers/BUILD-LOG.md)
+   else
+     last_action="None"
+   fi
+
+   # Detect status
+   if [ -f .codebakers/FIX-QUEUE.md ]; then
+     pending_count=$(grep -c "^\[ \]" .codebakers/FIX-QUEUE.md)
+     if [ $pending_count -eq 0 ]; then
+       status="All features complete — ready for launch"
+     else
+       status="Build in progress — $pending_count items in queue"
+     fi
+   else
+     status="Interview complete — build not started"
+   fi
+
+4. Write new BRAIN.md (merge preserved + detected):
+
+   # Project Brain
+   Project: [from old BRAIN.md or inferred from package.json name]
+   Created: [from old BRAIN.md or current date]
+   Status: [detected status]
+
+   ONBOARDING_COMPLETE: [preserved]
+   USER_ROLE: [preserved]
+   GUIDED_MODE: [preserved]
+   BUILD_MODE: [preserved or detected if missing]
+   QUALITY_LEVEL: [preserved]
+   ANNOUNCEMENTS_SHOWN: [preserved]
+
+   DIFFERENTIATOR: [preserved]
+   SUCCESS: [preserved]
+   DATA ISOLATION: [preserved or "per-user" default]
+
+   ENTITIES: [detected entities list]
+
+   NEVER-DOS:
+   [preserved list]
+
+   CURRENT TASK: [inferred from status]
+   NEXT ACTION: [inferred from queue/flows]
+
+   LAST VERIFIED: [current date]
+
+5. Regenerate DEPENDENCY-MAP.md if exists:
+   pnpm dep:map
+
+6. Log reconciliation:
+   echo "[$(date)] Auto-reconciled BRAIN.md: $entity_drift entities, $store_drift stores" >> .codebakers/BUILD-LOG.md
+```
+
+### Continuous Health Checks
+
+**Trigger:** After every 5 atomic units completed
+
+**Process:**
+
+```bash
+# Check if this is the 5th feature
+feature_count=$(git log --grep="feat(atomic):" --oneline | wc -l)
+if [ $((feature_count % 5)) -eq 0 ]; then
+  # Quick health check
+  brain_entities=$(grep -c "^- " .codebakers/BRAIN.md)
+  code_entities=$(find src/app/api -maxdepth 1 -type d | tail -n +2 | wc -l)
+
+  if [ $code_entities -ne $brain_entities ]; then
+    # Silent auto-reconcile (LOW severity path)
+    # Update counts in BRAIN.md
+    # Log to BUILD-LOG.md
+
+    # First time alert
+    if ! grep -q "manual code edits" .codebakers/BUILD-LOG.md; then
+      echo "🍞 CodeBakers: Noticed manual code edits outside the system. That's fine — I'm tracking them automatically."
+      echo "[$(date)] First manual edit detected — auto-tracking enabled" >> .codebakers/BUILD-LOG.md
+    fi
+  fi
+fi
+```
+
+**First manual edit alert** shows once, then silent forever after.
+
+---
+
 ## New Project Flow (Post-Interview)
 
 After the Interview Agent completes and produces FLOWS.md:
@@ -301,12 +569,19 @@ After the Interview Agent completes and produces FLOWS.md:
 1. Read FLOWS.md completely
 2. Read project-profile.md (differentiator, success definition, entities, never-dos)
 3. Read .codebakers/BRAIN.md (architectural decisions from interview + BUILD_MODE from onboarding)
+3.5. Auto-detect project complexity (automatic optimization)
+   → Count entities in project-profile.md
+   → If entities <= 3: COMPLEXITY_MODE: simple
+   → If entities >= 4: COMPLEXITY_MODE: production
+   → Write to BRAIN.md: COMPLEXITY_MODE: [simple|production]
+   → Simple mode skips: completeness verifier, integration verifier (speeds up small projects)
+   → Production mode: full machinery (current behavior)
 4. Run: pnpm dep:map (initial empty map — establishes baseline)
 5. Break every flow into atomic units
 6. Dependency-order the units (what must exist before what)
 7. Write initial FIX-QUEUE.md with every unit as an ordered item
 8. Present build plan to user
-9. Read BUILD_MODE from BRAIN.md (already set during onboarding)
+9. Read BUILD_MODE and COMPLEXITY_MODE from BRAIN.md
 10. Begin build loop in selected mode
 ```
 
@@ -326,13 +601,17 @@ Build order based on dependencies:
 ─────────────────────────────────────────────
 Build Mode: [Interactive | Autonomous] (from onboarding)
 Quality Level: [production | prototype] (from onboarding)
+Complexity: [simple | production] (auto-detected: [N] entities)
+
+[If simple mode]
+⚡ Simple mode active: Faster build (skips completeness/integration verifiers)
 
 Starting build loop now...
 ─────────────────────────────────────────────
 ```
 
-**BUILD_MODE and QUALITY_LEVEL already set in BRAIN.md during onboarding.**
-No need to ask again. Just read and proceed.
+**BUILD_MODE, QUALITY_LEVEL, and COMPLEXITY_MODE set automatically.**
+No user questions needed. System optimizes based on project size.
 
 ---
 
@@ -361,13 +640,16 @@ Build atomic unit (agents/patterns/atomic-unit.md)
   ↓
 Gate check
   → All checklist boxes checked?
-  → PASS: gate commit → Completeness Verifier
+  → PASS: gate commit → Completeness Verifier (if production mode)
   → FAIL: add failures as P1 items → Fix Executor → gate check again
   ↓
-Completeness Verifier (automatic)
-  → Real user can complete this flow?
-  → PASS: mark feature complete in FLOWS.md
-  → FAIL: add failures as P1 → Fix Executor → verify again
+Completeness Verifier (automatic — skipped if COMPLEXITY_MODE: simple)
+  → Check COMPLEXITY_MODE in BRAIN.md
+  → If simple: skip verifier, mark feature complete immediately
+  → If production: run full completeness check
+    · Real user can complete this flow?
+    · PASS: mark feature complete in FLOWS.md
+    · FAIL: add failures as P1 → Fix Executor → verify again
   ↓
 Report to user:
   "🍞 CodeBakers: Feature complete — [feature name]
@@ -416,17 +698,22 @@ Build atomic unit (agents/patterns/atomic-unit.md)
   ↓
 Gate check
   → All checklist boxes checked?
-  → PASS: gate commit → Completeness Verifier
+  → PASS: gate commit → Completeness Verifier (if production mode)
   → FAIL: add failures as P1 items → Fix Executor → gate check again
   ↓
-Completeness Verifier (automatic)
-  → Real user can complete this flow?
-  → PASS: next unit
-  → FAIL: add failures as P1 → Fix Executor → verify again
+Completeness Verifier (automatic — skipped if COMPLEXITY_MODE: simple)
+  → Check COMPLEXITY_MODE in BRAIN.md
+  → If simple: skip verifier, proceed to next unit
+  → If production: run full completeness check
+    · Real user can complete this flow?
+    · PASS: next unit
+    · FAIL: add failures as P1 → Fix Executor → verify again
   ↓
-Every 2 units: Integration Verifier
-  → Features work together?
-  → FAIL: fix before continuing
+Every 2 units: Integration Verifier (skipped if COMPLEXITY_MODE: simple)
+  → Check COMPLEXITY_MODE in BRAIN.md
+  → If simple: skip integration verifier
+  → If production: verify features work together
+    · FAIL: fix before continuing
   ↓
 Every 3 units: Reviewer
   → Critical issues? → Fix Executor immediately
@@ -732,6 +1019,25 @@ pnpm test:e2e
 
 # Dependency map current
 pnpm dep:map
+
+# BRAIN.md health check (every 5 features - automatic)
+feature_count=$(git log --grep="feat(atomic):" --oneline | wc -l)
+if [ $((feature_count % 5)) -eq 0 ] && [ $feature_count -gt 0 ]; then
+  # Run drift detection
+  brain_entities=$(grep -c "ENTITIES:" .codebakers/BRAIN.md 2>/dev/null || echo 0)
+  code_entities=$(find src/app/api -maxdepth 1 -type d 2>/dev/null | tail -n +2 | wc -l)
+
+  if [ $code_entities -ne $brain_entities ]; then
+    # Auto-reconcile silently (low severity)
+    # Log once if first manual edit
+    if ! grep -q "manual code edits" .codebakers/BUILD-LOG.md 2>/dev/null; then
+      echo "🍞 CodeBakers: Noticed manual code edits outside the system. That's fine — I'm tracking them automatically."
+      echo "[$(date)] First manual edit detected — auto-tracking enabled" >> .codebakers/BUILD-LOG.md
+    else
+      echo "[$(date)] Health check: Auto-reconciled BRAIN.md ($code_entities entities vs $brain_entities in BRAIN)" >> .codebakers/BUILD-LOG.md
+    fi
+  fi
+fi
 
 # Gate commit
 git commit -m "feat(atomic): [feature] — gate passed [N/N checks]"
@@ -1346,6 +1652,88 @@ Effects:
 
 → Changes take effect immediately for current session
 ```
+
+---
+
+## @rollback Routing
+
+When user says `@rollback`, "rollback", "undo last feature", or `@rollback [N]`:
+
+```
+→ Parse N (number of features to rollback, default: 1)
+→ If N > 5: confirm with user first ("Rolling back more than 5 features. Are you sure?")
+→ Check for uncommitted changes (git status --porcelain)
+  · If uncommitted changes: "Uncommitted changes detected. Stash first: git stash"
+  · If clean: proceed
+
+1. Find last N atomic commits:
+   git log --grep="feat(atomic):" --oneline -[N]
+
+2. Show preview:
+   "🍞 CodeBakers: Rollback preview
+
+   Will undo:
+   → [commit hash] feat(atomic): [feature name]
+   → Files changed: [N]
+   → Lines: +[added] -[removed]
+
+   Last working state: [commit before this]
+
+   Continue with rollback?
+   [Yes / No]"
+
+3. Wait for user confirmation
+
+4. If Yes:
+   # Create safety branch
+   git checkout -b rollback-safety-$(date +%s)
+   git checkout main
+
+   # Revert commit (preserves history)
+   git revert [commit-hash] --no-edit
+
+   # Regenerate dependency map
+   pnpm dep:map
+
+   # Update BRAIN.md:
+   → Remove entity from ENTITIES if entity was added
+   → Update CURRENT TASK
+   → Log rollback: "[date] Rollback: [feature name]" >> BUILD-LOG.md
+
+   # Verify clean state
+   tsc --noEmit
+
+   # If TypeScript errors: revert failed, restore from safety branch
+   # If clean: amend commit message
+   git commit --amend -m "revert: rollback [feature] — returned to working state"
+
+   # Report:
+   "🍞 CodeBakers: Rollback complete.
+
+   Reverted: [feature name]
+   Current state: [N/total] features complete
+   Safety branch: rollback-safety-[timestamp] (delete when satisfied)
+
+   TypeScript: clean ✓
+   Dependency map: regenerated ✓
+
+   Next: Continue with queue or fix what broke"
+
+5. If No: cancel rollback
+```
+
+**Safety guarantees:**
+- Creates safety branch before rollback (recoverable)
+- Uses git revert (preserves history)
+- Regenerates dependency map
+- Verifies TypeScript clean
+- Updates BRAIN.md state
+
+**Limitations:**
+- Only rolls back feat(atomic): commits
+- Cannot rollback partial units
+- Requires clean working tree
+- N > 5 requires confirmation
 
 ---
 
