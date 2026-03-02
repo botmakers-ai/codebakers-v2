@@ -101,11 +101,36 @@ refs/prd/ files:
   → If FLOWS.md exists: cross-reference — flag uncovered requirements as FIX-QUEUE P1
   → Update BRAIN.md: key requirements section
 
-refs/design/ files (images, PDFs, screenshots):
+refs/design/ JSX or HTML files (staff mockups — highest priority):
+  → Read as component code — no interpretation needed, values are exact
+  → Extract:
+    - Color values (hex, rgb, hsl, Tailwind classes → resolve to hex)
+    - Component names and hierarchy
+    - Layout structure (flex, grid, positioning)
+    - Spacing and sizing values
+    - Typography (font, size, weight, line-height)
+    - Interactive states (hover, active, focus, disabled)
+    - Animation and transition values
+    - Any comments explaining design decisions
+  → STAFF JSX/HTML MOCKUP IS THE APPROVED CONTRACT
+    Every component built must match this structure exactly
+    Deviations flagged as P1 issues automatically
+  → Update UI-RESEARCH.md design tokens with exact values from mockup
+  → Write DESIGN-CONTRACT.md listing every component in the mockup:
+    component name | file | key styles | interaction behavior
+  → Add to BRAIN.md: "Staff mockup: [file] — contract locked"
+
+refs/design/ image or PDF files (client-provided visuals):
   → Use vision to read — extract colors, layout, typography, components
   → CLIENT DESIGN OVERRIDES general UI research
   → Update UI-RESEARCH.md design tokens with client-specific values
   → Add to BRAIN.md: "Client design [file]: [key decisions extracted]"
+
+refs/design/ — PRIORITY ORDER (highest to lowest):
+  1. Staff JSX/HTML mockups → exact values, enforced as contract
+  2. Client image/PDF mockups → vision-extracted, overrides research
+  3. Brand files from refs/brand/ → overrides color and typography
+  4. General UI research → baseline when nothing else provided
 
 refs/api/ files:
   → Read completely

@@ -206,6 +206,22 @@ Every project maintains `.codebakers/` — the agent's persistent memory across 
 ├── ASSUMPTIONS.md        ← Every automatic decision with reasoning.
 ├── CREDENTIALS-NEEDED.md ← External actions needed. Exact commands.
 └── sessions/
+
+refs/
+├── prd/                  ← Requirements, specs, feature lists
+├── design/               ← Staff JSX/HTML mockups + client visuals
+├── api/                  ← API docs, endpoint specs
+├── brand/                ← Brand guidelines, colors, fonts
+├── schema/               ← Database schemas, data models
+└── other/                ← Anything else relevant
+
+DESIGN-CONTRACT.md        ← Generated from staff mockups. Every component listed.
+UI-RESEARCH.md            ← UI research + design tokens. Never contradicted.
+project-profile.md        ← Interview output. Source of truth for intent.
+FLOWS.md                  ← All user flows with status.
+CHANGELOG.md              ← Plain English. What shipped.
+.refs-processed           ← Manifest of processed ref files.
+```
     └── YYYY-MM-DD-NNN.md
 ```
 
