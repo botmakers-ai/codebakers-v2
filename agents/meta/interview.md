@@ -544,22 +544,34 @@ Status: [NOT STARTED]
 **`CREDENTIALS-NEEDED.md`:** Every external credential needed, with exact setup instructions.
 
 **`.codebakers/BRAIN.md`:**
+
+BRAIN.md already exists (written by onboarding). APPEND interview data:
+
 ```markdown
 # Project Brain
 Project: [name]
-Created: [date]
+Created: [date from onboarding]
 Status: Interview complete — build not started
 
-DIFFERENTIATOR: [value]
-SUCCESS: [value]
-DATA ISOLATION: [value]
+ONBOARDING_COMPLETE: [date from onboarding]
+USER_ROLE: [from onboarding]
+GUIDED_MODE: [from onboarding]
+BUILD_MODE: [from onboarding]
+QUALITY_LEVEL: [from onboarding]
+ANNOUNCEMENTS_SHOWN: [from onboarding, usually empty []]
+
+DIFFERENTIATOR: [from Phase 2]
+SUCCESS: [from Phase 10]
+DATA ISOLATION: [from Phase 11]
 
 NEVER-DOS:
-[list — checked before every feature]
+[list from Phase 7 — checked before every feature]
 
 CURRENT TASK: Begin build loop
 NEXT ACTION: pnpm dep:map → Conductor → first atomic unit
 ```
+
+**Important:** Read existing BRAIN.md first. Preserve onboarding fields. Update Status and append interview fields.
 
 **`RISKS.md`:** Internal only — risk → build action mapping. Never shown to user.
 

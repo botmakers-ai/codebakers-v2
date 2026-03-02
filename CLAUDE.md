@@ -475,3 +475,5 @@ Commands also work in plain English (e.g., "rebuild this app", "show me the flow
 - `@refs` — process any new files in refs/ folder immediately
 - `@ui` — re-run UI research, update UI-RESEARCH.md, add gaps to fix queue
 - `@expand [task]` — manually trigger prompt expansion on any task without executing
+- `@tutorial` — show complete mutation handler example walkthrough (Delete Account feature)
+- `@guided [on|off|verbose|minimal|status]` — toggle guided mode (contextual teaching + capability announcements)

@@ -78,7 +78,13 @@ Run in order. Never skip steps.
       → Produces UI-RESEARCH.md with design tokens and patterns
       → Wait for UI Researcher to complete fully before continuing
 
-   d. Conductor shows completion message and STOPS:
+   d. Load and run agents/meta/onboarding.md
+      → Onboarding Agent introduces CodeBakers
+      → User selects role (solo-developer / team-lead / learning / fixing)
+      → User configures preferences (guided mode, build mode, quality level)
+      → Writes to BRAIN.md: ONBOARDING_COMPLETE, USER_ROLE, GUIDED_MODE, BUILD_MODE, QUALITY_LEVEL
+      → Shows research summary:
+
       "🍞 CodeBakers: Research complete for [app name].
 
       I researched:
@@ -94,7 +100,13 @@ Run in order. Never skip steps.
 
       Full findings: .codebakers/RESEARCH-SUMMARY.md
 
-      Now add files to refs/ before typing @interview:
+      Your preferences:
+      → Role: [USER_ROLE]
+      → Guided Mode: [GUIDED_MODE]
+      → Build Mode: [BUILD_MODE]
+      → Quality Level: [QUALITY_LEVEL]
+
+      Optional: Add files to refs/ before typing @interview:
       → refs/design/    ← mockups (JSX or HTML)
       → refs/brand/     ← logo, colors, brand guidelines
       → refs/prd/       ← any requirements docs from client
@@ -288,17 +300,17 @@ After the Interview Agent completes and produces FLOWS.md:
 ```
 1. Read FLOWS.md completely
 2. Read project-profile.md (differentiator, success definition, entities, never-dos)
-3. Read .codebakers/BRAIN.md (architectural decisions from interview)
+3. Read .codebakers/BRAIN.md (architectural decisions from interview + BUILD_MODE from onboarding)
 4. Run: pnpm dep:map (initial empty map — establishes baseline)
 5. Break every flow into atomic units
 6. Dependency-order the units (what must exist before what)
 7. Write initial FIX-QUEUE.md with every unit as an ordered item
 8. Present build plan to user
-9. Ask: Interactive or Autonomous mode?
+9. Read BUILD_MODE from BRAIN.md (already set during onboarding)
 10. Begin build loop in selected mode
 ```
 
-**Build plan + mode selection format:**
+**Build plan format:**
 ```
 🍞 CodeBakers: Here's the build plan for [project name].
 
@@ -312,29 +324,15 @@ Build order based on dependencies:
 [list all units]
 
 ─────────────────────────────────────────────
-How do you want to build this?
+Build Mode: [Interactive | Autonomous] (from onboarding)
+Quality Level: [production | prototype] (from onboarding)
 
-INTERACTIVE MODE
-  → I build one feature at a time
-  → You test each feature before I start the next
-  → You pick which feature to build next
-  → You can stop at MVP if you want
-  → Recommended for: first CodeBakers build, mission-critical apps
-
-AUTONOMOUS MODE
-  → I build all features sequentially without stopping
-  → You come back to a complete app
-  → Faster, but you don't see progress between features
-  → Recommended for: prototypes, internal tools, experienced users
-
-Choose: Interactive / Autonomous
+Starting build loop now...
 ─────────────────────────────────────────────
 ```
 
-**Record choice in BRAIN.md:**
-```markdown
-BUILD MODE: [Interactive | Autonomous]
-```
+**BUILD_MODE and QUALITY_LEVEL already set in BRAIN.md during onboarding.**
+No need to ask again. Just read and proceed.
 
 ---
 
@@ -587,6 +585,139 @@ Before any code change, the prompt expander handles this. But the Conductor enfo
 ```
 
 Never make a single-file change without tracing dependencies first.
+
+---
+
+## Guided Mode System — Contextual Teaching
+
+When GUIDED_MODE is enabled in BRAIN.md, announce capabilities at relevant moments.
+
+**Purpose:** CodeBakers leads, not just assists. It knows its own capabilities and shares them proactively when contextually relevant — not through docs the user has to read, but at exactly the right moment.
+
+### How It Works
+
+1. Read GUIDED_MODE from BRAIN.md at session start
+2. Read ANNOUNCEMENTS_SHOWN list (prevents announcement fatigue)
+3. When trigger detected → check if already shown
+4. If new → announce capability, append to ANNOUNCEMENTS_SHOWN
+5. If verbose mode → show every time, ignore ANNOUNCEMENTS_SHOWN
+
+### Pattern Triggers — Keyword Detection in User Input
+
+Detect keywords in user messages. Announce relevant pattern BEFORE building.
+
+| Keywords | Announcement |
+|----------|-------------|
+| "stripe", "payment", "webhook" | "I have a webhook-handling pattern with Stripe examples—HMAC signature verification, idempotency, retry logic. Want me to use it?" |
+| "real-time", "live", "sync", "updates" | "I have a real-time-sync pattern using Supabase Realtime. I can build Broadcast (live messages), Presence (who's online), or Postgres Changes (database updates). Which fits your use case?" |
+| "long list", "performance", "thousands", "slow scroll" | "I have a virtualization pattern using TanStack Virtual. It renders only visible items—handles millions of rows smoothly. Should I use it here?" |
+| "upload", "file", "image", "attachment", "pdf", "document" | "I have a file-upload pattern with Supabase Storage—direct client upload, progress tracking, validation, image preview. Want me to implement that?" |
+| "keyboard", "tab", "accessibility", "a11y", "wcag" | "I have a keyboard-navigation pattern following WCAG 2.2—skip links, roving tabindex, focus trapping, screen reader announcements. I'll include it." |
+| "cache", "fast", "offline", "stale" | "I have a caching pattern—stale-while-revalidate, optimistic updates, offline-first. Which strategy fits? (I can propose based on use case)" |
+| "drag", "reorder", "sort", "dnd" | "I have a drag-and-drop pattern with dnd-kit—accessible, touch-friendly, auto-scroll, visual feedback. Should I use it?" |
+| "email", "send", "smtp", "resend" | "I have an email-security pattern—SPF/DKIM/DMARC setup, bounce handling, unsubscribe headers, rate limiting. I'll implement it." |
+
+### Context Triggers — State-Based Detection
+
+Detect moments in the build process. Announce methodology DURING work.
+
+| Moment | Announcement |
+|--------|-------------|
+| Before first mutation handler | "Quick heads-up: I maintain a dependency map (entity → store → component). I'll read it before building this delete handler to ensure every store updates. This prevents stale UI bugs—the most common issue in AI-built apps." |
+| Before first atomic unit | "I build features as atomic units—complete vertical slices with all layers: API + store + UI + states + tests. Nothing ships incomplete unless you specifically requested prototype mode." |
+| After first error during build | "I log errors to ERROR-LOG.md with root cause and pattern. Next time I see similar errors, I'll recognize the pattern and fix comprehensively—not just the symptom." |
+| Queue reaches 10+ items | "Your queue has [N] items. Want me to switch to autonomous mode and work through these systematically? (You can switch back to interactive anytime)" |
+| Before first external integration | "For external APIs, I poll first (reliable baseline) with webhook optimization (fast when available). State machine: healthy → degraded → recovering → failed. This ensures graceful degradation." |
+| User mentions mobile/responsive | "I build mobile-responsive by default—touch targets 44px+, proper viewport, works correctly on small screens (not just 'technically renders'). This is part of the production quality standard." |
+| Before first form | "Forms get validation feedback before submit (not just on submit), loading states on buttons, error messages that tell users what to do next. This is the completeness standard." |
+| Before first E2E test | "E2E tests run against the built app (pnpm build && pnpm start), not dev server. This catches build-time errors and environment variable issues before deploy." |
+| Before first database migration | "I'll create a rollback snapshot first (git commit). If migration fails, we can revert cleanly. Migrations are high-risk—always reversible." |
+| User asks about security | "Security defaults: Supabase RLS on all tables, input validation with Zod, CSRF protection, rate limiting on public routes, no raw SQL. These are enforced automatically." |
+
+### Teaching Moments — Inline Explanations While Working
+
+When building a mutation handler:
+```
+"I'm reading DEPENDENCY-MAP.md now... found 3 stores that reference Account:
+- useAccountStore (accounts array + activeAccount field)
+- useMailStore (needs to clear messages for this account)
+- useSettingsStore (active account ID)
+
+I'll update all three, handle the 'last item deleted' edge case, and add
+rollback on API failure. This ensures the UI never gets out of sync with
+the database."
+```
+
+When fixing an error:
+```
+"This error happened because the mutation only updated the accounts array
+but didn't clear activeAccount. I'll check ERROR-LOG.md... no similar
+patterns yet. I'll fix this one, then grep for similar incomplete handlers
+and fix those too. Then I'll log the pattern so I don't repeat this mistake."
+```
+
+When running tests:
+```
+"E2E tests run against the built app (pnpm build && pnpm start), not dev
+server. This catches build-time errors, missing environment variables, and
+SSR issues that only show up in production builds."
+```
+
+When choosing a package:
+```
+"Checking: react-hook-form... ✓ 2M weekly downloads, ✓ maintained (last
+commit 2 weeks ago), ✓ MIT license, ✓ no known vulnerabilities. Adding
+with --save-exact (no ^ or ~ allowed in CodeBakers)."
+```
+
+### Announcement Tracking
+
+After each announcement, append identifier to BRAIN.md:
+
+```markdown
+ANNOUNCEMENTS_SHOWN: [pattern-webhook, context-first-mutation, teaching-dep-map, pattern-real-time]
+```
+
+On next trigger:
+- Check if identifier in ANNOUNCEMENTS_SHOWN
+- If yes AND mode != verbose: skip announcement
+- If no OR mode == verbose: show announcement, append identifier
+
+### Guided Mode Settings
+
+Stored in BRAIN.md as `GUIDED_MODE: [enabled|disabled|verbose|minimal]`
+
+**enabled** (default for solo-developer, learning roles):
+- Pattern announcements: yes (once each)
+- Context announcements: yes (once each)
+- Teaching moments: yes
+
+**disabled** (default for team-lead with no guided request):
+- Pattern announcements: no
+- Context announcements: no
+- Teaching moments: no
+
+**verbose** (set via @guided verbose):
+- Pattern announcements: yes (every time)
+- Context announcements: yes (every time)
+- Teaching moments: yes (expanded detail)
+- Ignores ANNOUNCEMENTS_SHOWN list
+
+**minimal** (set via @guided minimal):
+- Pattern announcements: yes (once each, keywords only)
+- Context announcements: no
+- Teaching moments: no
+
+### User Control
+
+User can toggle anytime:
+- `@guided on` → enable
+- `@guided off` → disable
+- `@guided verbose` → maximum teaching
+- `@guided minimal` → patterns only
+- `@guided status` → show current mode + announcements count
+
+Changes update BRAIN.md and take effect immediately.
 
 ---
 
@@ -991,10 +1122,16 @@ When user says `@interview`, "start interview", "new project interview":
 
 ```
 → Check for BRAIN.md
-→ If exists: "🍞 CodeBakers: Project already initialized. BRAIN.md exists."
-→ If missing: Load agents/meta/interview.md and execute
-→ Interview produces: project-profile.md, FLOWS.md, CREDENTIALS-NEEDED.md, BRAIN.md
-→ After interview: Present build plan + mode selection (interactive vs autonomous)
+→ If exists AND ONBOARDING_COMPLETE exists: "🍞 CodeBakers: Project already initialized. BRAIN.md exists."
+→ If exists BUT ONBOARDING_COMPLETE missing (legacy project): Ask user:
+  "BRAIN.md exists but you haven't run onboarding yet.
+   Run onboarding first (recommended) or skip directly to interview?
+   [Run onboarding / Skip to interview]"
+→ If BRAIN.md missing: Error — onboarding should have run first during new project startup
+→ If onboarding complete: Load agents/meta/interview.md and execute
+→ Interview produces: project-profile.md, FLOWS.md, CREDENTIALS-NEEDED.md
+→ Interview inherits BUILD_MODE, QUALITY_LEVEL from BRAIN.md (set during onboarding)
+→ After interview: Present build plan (mode already set, no selection prompt)
 ```
 
 ---
@@ -1158,6 +1295,56 @@ When user says `@expand [task]`, "expand this task", "show expansion":
 → Generate full internal execution prompt
 → Display expanded prompt (don't execute)
 → Ask: "Execute this? Yes / No / Modify"
+```
+
+---
+
+## @tutorial Routing
+
+When user says `@tutorial`, "show tutorial", "example feature":
+
+```
+→ Load agents/meta/onboarding.md
+→ Display Phase 3: Tutorial section
+→ Shows complete "Delete Account" mutation handler walkthrough:
+  · Reading dependency map
+  · Building API route
+  · Updating all stores
+  · Handling edge cases
+  · Optimistic updates + rollback
+  · Ripple check verification
+→ Purpose: Reference material for CodeBakers methodology
+→ Can be viewed anytime, even if skipped during onboarding
+```
+
+---
+
+## @guided Routing
+
+When user says `@guided [on|off|verbose|minimal|status]`:
+
+```
+→ Parse command argument
+→ Read current GUIDED_MODE from BRAIN.md
+→ Read ANNOUNCEMENTS_SHOWN list
+
+Commands:
+  @guided on → Set GUIDED_MODE: enabled
+  @guided off → Set GUIDED_MODE: disabled
+  @guided verbose → Set GUIDED_MODE: verbose (show all announcements, ignore shown list)
+  @guided minimal → Set GUIDED_MODE: minimal (patterns only, no teaching moments)
+  @guided status → Display current mode + announcements shown count
+
+→ Update BRAIN.md with new GUIDED_MODE value
+→ Report: "🍞 CodeBakers: Guided Mode set to [mode]. [Effect description]"
+
+Effects:
+  enabled: Pattern + context announcements (once each) + teaching moments
+  disabled: No announcements, no teaching
+  verbose: All announcements every time + expanded teaching moments
+  minimal: Pattern announcements only (once each)
+
+→ Changes take effect immediately for current session
 ```
 
 ---
