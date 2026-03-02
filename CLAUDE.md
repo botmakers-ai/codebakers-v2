@@ -418,7 +418,7 @@ The only output of this system is working, verified, production-ready software.
 
 ## Commands
 
-- `@rebuild` — full autonomous pipeline on existing codebase: dep map → read → reconstruct intent → audit → fix → verify → report
+- `@rebuild` — creates a `rebuild/[date]` branch, then runs full autonomous pipeline: dep map → read → reconstruct intent → audit → fix → verify → report. Merge when satisfied. Your working branch is never touched.
 - `@interview` — start project interview (new projects)
 - `@fix` — run fix executor on current findings
 - `@flows` — show or regenerate FLOWS.md

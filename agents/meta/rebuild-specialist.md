@@ -30,12 +30,37 @@ Stage 8: Output Reports
 
 ---
 
-## Stage 0: Generate Dependency Map
+## Stage 0: Branch + Generate Dependency Map
 
 This runs before you read a single line of application code. Non-negotiable.
 
+**Step 0a — Create rebuild branch:**
 ```bash
-# Generate the live dependency map from actual code
+# Never run @rebuild on main or your working branch directly
+BRANCH="rebuild/$(date +%Y-%m-%d)"
+
+# If a rebuild branch already exists for today, increment it
+git branch | grep "$BRANCH" && BRANCH="${BRANCH}-2"
+
+git checkout -b $BRANCH
+echo "🍞 CodeBakers: Rebuild branch created: $BRANCH"
+```
+
+If the branch cannot be created (uncommitted changes blocking checkout):
+```bash
+# Stash first, then branch
+git stash push -m "pre-rebuild stash $(date +%Y-%m-%d)"
+git checkout -b $BRANCH
+```
+
+Log in BUILD-LOG.md:
+```
+[Stage 0] Rebuild branch: [branch name]
+[Stage 0] Base commit: [git hash]
+```
+
+**Step 0b — Generate dependency map:**
+```bash
 pnpm dep:map
 ```
 
@@ -334,13 +359,26 @@ Any external credentials or manual actions still needed.
 
 ---
 
-## Final Commit
+## Final Commit + Merge Instructions
 
 ```bash
 pnpm dep:map  # final map regeneration
 git add -A
 git commit -m "feat(rebuild): complete rebuild — [N] fixes, [N] flows verified"
-git push
+git push origin $(git branch --show-current)
+```
+
+Tell the user:
+```
+🍞 CodeBakers: Rebuild complete on branch $(git branch --show-current)
+
+[N] fixes applied | [N] flows verified | [N] P0/P1 remaining
+
+Review changes:  git diff main
+Merge when ready: git checkout main && git merge $(git branch --show-current)
+Discard rebuild: git checkout main && git branch -D $(git branch --show-current)
+
+See REBUILD-REPORT.md for full details.
 ```
 
 ---
