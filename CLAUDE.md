@@ -355,6 +355,27 @@ Every feature must have:
 
 ---
 
+## RULE: Atomic Units — No Half-Built Features
+
+Every feature is a complete vertical slice: API + store + UI states + tests. All layers. Nothing ships incomplete.
+
+**When starting any feature:**
+```
+→ Load agents/patterns/atomic-unit.md
+→ Build every layer in order (schema → API → store → UI → states → tests)
+→ Gate check: every box on the atomic unit checklist must pass
+→ Only then: next feature unlocks
+```
+
+**@fast mode** (prototypes/internal tools only — user must explicitly request):
+- Skips E2E tests and mobile checks
+- Never skips: store updates, error handling, TypeScript, security filters
+- Every skipped item auto-logged to FIX-QUEUE.md as P2
+
+**Blocked unit:** Document in CREDENTIALS-NEEDED.md + mark `[BLOCKED]` in FIX-QUEUE.md. Never leave silently incomplete.
+
+---
+
 ## Agent Auto-Chaining
 
 QA gate fails → Fix Executor runs automatically (never just report and block)
