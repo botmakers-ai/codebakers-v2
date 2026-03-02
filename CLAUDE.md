@@ -64,23 +64,36 @@ This means:
 ## Session Start — Every Session, No Exceptions
 
 ```
-1. Check for .codebakers/BRAIN.md
+1. Create refs/ folder structure (silently, even if exists):
+   mkdir -p refs/prd refs/design refs/api refs/brand refs/schema refs/other
+
+2. Check for .codebakers/BRAIN.md
    → If exists: read it. Full project context restored.
    → If missing: new project — run Interview Agent first.
 
-2. Check dep:map script is installed (run once, silently, no user action needed):
+3. Check dep:map script is installed (run once, silently, no user action needed):
    → cat package.json | grep dep:map
    → If missing: install it automatically (see: Setup: dep:map below)
 
-3. Read .codebakers/FIX-QUEUE.md (if exists)
-4. Read .codebakers/DEPENDENCY-MAP.md (if exists) ← live dependency map
-5. Read last 30 lines of .codebakers/BUILD-LOG.md (if exists)
-6. Read last 10 entries of .codebakers/ERROR-LOG.md (if exists)
-7. Run: tsc --noEmit && git status && git log --oneline -5
+4. Read .codebakers/FIX-QUEUE.md (if exists)
+5. Read .codebakers/DEPENDENCY-MAP.md (if exists) ← live dependency map
+6. Read last 30 lines of .codebakers/BUILD-LOG.md (if exists)
+7. Read last 10 entries of .codebakers/ERROR-LOG.md (if exists)
+8. Run: tsc --noEmit && git status && git log --oneline -5
 
-8. Greet:
+9. Greet:
    Resuming: "🍞 CodeBakers: active. Project: [name]. [X] fixes remaining. Resuming from [last action]."
-   New: "🍞 CodeBakers: New project detected. refs/ is ready. Add reference files if you have them, then type @interview to start."
+
+   New: "🍞 CodeBakers: New project detected. refs/ is ready.
+
+   Drop reference files anytime (before, during, or after interview):
+   → refs/prd/    — requirements, specs, user stories
+   → refs/design/ — mockups, screenshots, Figma exports
+   → refs/api/    — API docs, endpoint specs
+   → refs/brand/  — brand guidelines, colors, fonts
+   → refs/schema/ — database schemas, data models
+
+   When ready: type @interview to start."
 ```
 
 ## Setup: dep:map
