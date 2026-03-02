@@ -357,16 +357,82 @@ Select the right agents for each task. Maximum 4 agents active simultaneously.
 |---------|--------|
 | New project | interview → conductor → build loop |
 | @rebuild | rebuild-specialist (full pipeline) |
+| @rca or error pasted | error-investigator (deep RCA) |
 | Any mutation | prompt-engineer + mutation-handler + atomic-unit |
 | Any new feature | prompt-engineer + atomic-unit |
 | Fix queue item | prompt-engineer + relevant pattern |
 | QA failure | fix-executor |
 | Build complete | completeness-verifier → pre-launch |
+| Error in console/build | error-investigator (smart triage) |
 
 Fetch each agent from:
 ```
 https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/agents/[tier]/[name].md
 ```
+
+---
+
+## Error Handling and Investigation
+
+When user reports an error or pastes error output, route to Error Investigation Agent.
+
+### Automatic Error Detection
+
+Detect errors in user messages automatically:
+
+**Error signals:**
+- Stack trace present (lines with "at [file]:[line]")
+- Error keywords: "TypeError", "ReferenceError", "cannot read property", "is not defined", "is not a function"
+- Build errors: "Type error:", "TS[number]:", "Error:"
+- Network errors: "500", "404", "Network request failed"
+- User says: "error", "broken", "not working", "bug", "crash"
+
+**When error detected:**
+```
+→ Load agents/meta/error-investigator.md
+→ Pass full error message/context
+→ Error Investigator runs smart triage
+→ Returns with fix + learning logged
+```
+
+### @rca Command (Forced Deep Investigation)
+
+When user types `@rca` or "analyze this error deeply":
+```
+→ Load agents/meta/error-investigator.md
+→ Force Deep RCA mode (skip quick fix triage)
+→ Run comprehensive investigation regardless of pattern match
+→ Useful when user suspects systemic issue
+```
+
+### Error Investigation Flow
+
+```
+User pastes error
+  ↓
+Conductor detects error signal
+  ↓
+Load Error Investigator
+  ↓
+Smart Triage:
+  - Check ERROR-LOG.md for pattern
+  - Classify error type
+  - Decide: Quick Fix | Pattern Fix | Deep RCA
+  ↓
+Execute appropriate investigation
+  ↓
+Apply comprehensive fix
+  ↓
+Log to ERROR-LOG.md
+  ↓
+Report to user: root cause + prevention
+```
+
+**Never:**
+- Apply quick fix without checking ERROR-LOG.md first
+- Skip logging Deep RCA findings
+- Investigate same error twice (read ERROR-LOG.md entry)
+- Let user paste same error 3+ times (pattern should be in log by then)
 
 ---
 
@@ -706,6 +772,28 @@ When user says `@agent [name]`, "load [agent name]", "use [agent name]":
 → If single match: Load and execute that agent
 → If no match: "🍞 CodeBakers: Agent '[name]' not found. Type @team to see all agents."
 ```
+
+---
+
+## @rca Routing
+
+When user says `@rca`, "deep analysis", "root cause", or pastes an error with @rca:
+
+```
+→ Load agents/meta/error-investigator.md
+→ Force Deep RCA mode (skip quick fix triage)
+→ Run comprehensive investigation:
+   · Trace data flow through codebase
+   · Check DEPENDENCY-MAP.md for state issues
+   · Search for similar patterns
+   · Find root cause, not just symptom
+→ Apply comprehensive fix (immediate + upstream + pattern + prevention)
+→ Log to ERROR-LOG.md with full RCA
+→ Report: root cause + all fixes applied + prevention added
+```
+
+**Automatic @rca trigger:**
+If error pasted and ERROR-LOG.md shows same error 2+ times → auto-run Deep RCA without asking.
 
 ---
 
