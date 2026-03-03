@@ -1,12 +1,13 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.2.0
+**Version:** 4.2.1
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
+- **4.2.1** (2026-03-03): Added Manual Task Protocol — enforces CodeBakers system for ALL user requests (no more skipping context/dependencies for quick fixes)
 - **4.2.0** (2026-03-03): Added Error Sniffer (proactive error prevention with 9 categories), Tailwind CSS variables pattern (prevents "border-border class does not exist" errors)
 - **4.1.1** (2026-03-02): Added browser extension hydration warning suppression pattern
 - **4.1.0** (2026-03-02): Added git requirement check, TypeScript pre-commit enforcement, improved credentials flow, mockup analyzer, auto version checking
@@ -406,6 +407,77 @@ Execute to that standard. Document automatic decisions in ASSUMPTIONS.md.
 - Multi-tenant → org-level isolation everywhere
 - Any form → validation feedback before submit, not just on submit
 - Mobile → works correctly, not just "technically renders"
+
+---
+
+## Manual Tasks Go Through the System
+
+**Even ad-hoc requests follow the full CodeBakers protocol.**
+
+When you ask: "fix this error", "add this button", or "change X to Y" — the system doesn't just jump to the fix.
+
+**Every manual task follows this flow:**
+
+```
+Your request
+  ↓
+Read project context (.codebakers/BRAIN.md, DEPENDENCY-MAP.md, ERROR-LOG.md)
+  ↓
+Expand task with full context (agents/meta/prompt-engineer.md)
+  ↓
+Run Error Sniffer (check for known patterns)
+  ↓
+Load relevant patterns (mutation-handler, atomic-unit, etc.)
+  ↓
+Execute with dependencies mapped
+  ↓
+Verify TypeScript compiles
+  ↓
+Log learning to ERROR-LOG.md
+  ↓
+Report what was done + what was checked
+```
+
+**Why this matters:**
+
+Without the system:
+- ✗ Mutation might update database but leave UI stale
+- ✗ Same bug might be fixed twice (didn't check ERROR-LOG.md)
+- ✗ Might violate architectural decision (didn't read BRAIN.md)
+- ✗ Preventable error slips through (Error Sniffer didn't run)
+
+With the system:
+- ✓ All dependencies updated (checked DEPENDENCY-MAP.md)
+- ✓ Pattern learned (logged to ERROR-LOG.md)
+- ✓ Follows project decisions (read BRAIN.md)
+- ✓ Known errors prevented (Error Sniffer ran)
+
+**You should see:**
+```
+🍞 CodeBakers: Investigating through the system...
+
+Context loaded:
+→ BRAIN.md: [entities], [decisions]
+→ DEPENDENCY-MAP.md: [X] depends on [Y, Z]
+→ ERROR-LOG.md: Similar pattern fixed 2 days ago
+
+Error Sniffer: ⚠️ HIGH confidence warning detected
+→ [Pattern explanation]
+
+Applying comprehensive fix:
+→ [Database change]
+→ [Store update 1]
+→ [Store update 2]
+→ [Pattern logged]
+
+✓ TypeScript compiles
+✓ Dependencies updated
+✓ Learning logged
+```
+
+**This is how you know the system is running correctly.**
+
+If the response is just "Fixed!" with no context loading — the protocol was skipped (not good).
 
 ---
 

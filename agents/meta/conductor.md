@@ -1009,6 +1009,180 @@ Exempt: system commands (@rebuild, @interview, @research, @status, @help, @depma
 
 ---
 
+## Manual Task Protocol — CRITICAL
+
+**EVERY user request MUST go through the CodeBakers system. No exceptions.**
+
+Even for quick fixes, manual edits, or ad-hoc requests.
+
+### Why This Matters
+
+**WITHOUT the system:**
+```
+User: "Fix this delete button"
+
+I jump straight to fix:
+→ Read button code
+→ Fix onClick handler
+→ Done
+
+RESULT:
+✓ Delete works in database
+✗ UI still shows deleted item (forgot to update store)
+✗ Same bug might have been fixed before (didn't check ERROR-LOG.md)
+✗ Violated architectural decision (didn't read BRAIN.md)
+```
+
+**WITH the system:**
+```
+User: "Fix this delete button"
+
+BEFORE fixing:
+→ Read .codebakers/BRAIN.md (project context, decisions, entities)
+→ Check .codebakers/ERROR-LOG.md (was this fixed before?)
+→ Read .codebakers/DEPENDENCY-MAP.md (what needs updating?)
+→ Run Error Sniffer (is this a known pattern?)
+→ Load mutation-handler.md (it's a delete mutation)
+
+THEN fix:
+→ Fix onClick handler
+→ Update PostList store (from dependency map)
+→ Update PostDetail store (from dependency map)
+→ Update PostCount store (from dependency map)
+→ Log pattern to ERROR-LOG.md
+
+RESULT:
+✓ Delete works in database
+✓ UI updates correctly (all stores updated)
+✓ Pattern learned (won't happen again)
+✓ Follows architectural decisions
+```
+
+### The Protocol (Every Manual Task)
+
+```
+User asks for any task: "fix this", "add that", "change X to Y"
+  ↓
+STEP 1: Context Loading (30 seconds, comprehensive)
+  → Read .codebakers/BRAIN.md (entities, decisions, mode, complexity)
+  → Read .codebakers/DEPENDENCY-MAP.md (what's affected by this change)
+  → Read .codebakers/ERROR-LOG.md (has this happened before?)
+  → Read .codebakers/FIX-QUEUE.md (is this already queued?)
+  ↓
+STEP 2: Prompt Expansion
+  → Load agents/meta/prompt-engineer.md
+  → Identify relevant patterns (mutation? security? UX?)
+  → Expand the task with full context
+  ↓
+STEP 3: Error Sniffer (if code change)
+  → Load agents/meta/error-sniffer.md
+  → Check for known patterns that apply to this task
+  → Show warnings (HIGH → MEDIUM → LOW)
+  → User decides: Apply prevention / Proceed / Show details
+  ↓
+STEP 4: Execute with patterns
+  → If mutation: load agents/patterns/mutation-handler.md
+  → If atomic unit: load agents/patterns/atomic-unit.md
+  → If security-related: apply security checks
+  → If UI change: check mobile + a11y + empty/error/loading states
+  ↓
+STEP 5: Verify + Log
+  → tsc --noEmit (TypeScript must compile)
+  → Update DEPENDENCY-MAP.md if structure changed
+  → Log to BUILD-LOG.md
+  → If error was fixed: log to ERROR-LOG.md (learning)
+  ↓
+STEP 6: Report
+  → Tell user what was done
+  → Mention what was checked (dependencies, patterns, etc.)
+  → If prevention applied: explain what was avoided
+```
+
+### Exemptions (Skip the Protocol)
+
+**Only skip for:**
+- Information requests: "show me X", "what does Y do", "explain Z"
+- System commands: @rebuild, @status, @help, etc.
+- Read-only operations: reading files, grepping code, listing entities
+
+**NEVER skip for:**
+- Code changes (any file edit/write)
+- Adding features (even small ones)
+- Fixing errors
+- Refactoring
+- Mutations (create/update/delete)
+- Configuration changes
+
+### Red Flags (Protocol Was Skipped)
+
+If I do any of these, I violated the protocol:
+
+❌ "Let me quickly fix that" (without reading BRAIN.md first)
+❌ Fix a mutation without checking DEPENDENCY-MAP.md
+❌ Add a feature without running Error Sniffer
+❌ Apply a fix without checking ERROR-LOG.md first
+❌ Make a code change without loading relevant patterns
+
+### Example: Correct Protocol
+
+```
+User: "The delete account button isn't working"
+
+Me:
+"Let me investigate this through the CodeBakers system.
+
+Reading project context:
+→ .codebakers/BRAIN.md: easemail app, entities: users, emails, folders
+→ .codebakers/DEPENDENCY-MAP.md: users entity used by: UserProfile, AccountSettings, EmailList stores
+→ .codebakers/ERROR-LOG.md: Similar mutation issue fixed 2 days ago (forgot store update)
+
+Running Error Sniffer:
+⚠️ HIGH CONFIDENCE: Delete mutation without store update
+→ This exact pattern failed before (see ERROR-LOG.md entry)
+→ Prevention: Update all 3 stores after delete
+
+Loading mutation-handler pattern:
+→ Delete requires: API call + 3 store updates + confirmation dialog + error handling
+
+Now fixing:
+1. Fix delete API call (was missing user_id filter)
+2. Update UserProfile store (remove user)
+3. Update AccountSettings store (clear cache)
+4. Update EmailList store (remove user's emails)
+5. Add confirmation dialog (was missing)
+6. Add error handling
+
+Verified:
+✓ TypeScript compiles
+✓ All stores updated
+✓ Pattern logged to ERROR-LOG.md
+
+Result: Delete account now works completely - removes from DB, updates all UI, shows confirmation, handles errors."
+```
+
+**This is what following the protocol looks like.**
+
+### Enforcement
+
+**If user catches me skipping the protocol:**
+
+User: "Did you check BRAIN.md before making that change?"
+
+Me (honest answer):
+"No, I didn't. Let me do this correctly.
+
+[Re-reads BRAIN.md, DEPENDENCY-MAP.md, ERROR-LOG.md]
+[Checks what I missed]
+
+I missed: [what was missed]
+Let me fix: [comprehensive fix]
+
+Logging this violation so I don't skip the protocol again."
+
+**The user should never have to ask "did you check X?" — I should always check X.**
+
+---
+
 ## Agent Routing
 
 Select the right agents for each task. Maximum 4 agents active simultaneously.
