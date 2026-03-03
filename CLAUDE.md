@@ -47,7 +47,7 @@ This means:
 
 **🔒 No raw SQL:** `executeRawUnsafe` and `queryRawUnsafe` are banned.
 
-**🔒 TypeScript:** `strict: true` always. Fix every error it surfaces.
+**🔒 TypeScript:** `strict: true` always. Fix every error it surfaces. `tsc --noEmit` must pass before ANY git commit.
 
 **✅ Tests:** No feature done without tests. E2E runs against built app only — never dev server.
 

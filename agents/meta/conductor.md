@@ -1162,7 +1162,32 @@ Run automatically. Not optional.
 
 ```bash
 # Quality gates
+# TypeScript MUST compile clean before ANY commit
 tsc --noEmit
+
+if [ $? -ne 0 ]; then
+  echo "🍞 CodeBakers: ❌ TypeScript compilation failed. Cannot commit broken code."
+  echo ""
+  echo "WHAT HAPPENED:"
+  echo "TypeScript found errors that prevent the code from compiling."
+  echo ""
+  echo "WHY THIS BLOCKS COMMITS:"
+  echo "Committing broken TypeScript code will:"
+  echo "→ Block future sessions (can't resume from broken state)"
+  echo "→ Break the build permanently"
+  echo "→ Require manual intervention to fix"
+  echo ""
+  echo "HOW TO FIX:"
+  echo "1. Read the TypeScript errors above carefully"
+  echo "2. Fix each error one by one"
+  echo "3. Run: tsc --noEmit (verify it passes)"
+  echo "4. Then try committing again"
+  echo ""
+  echo "CRITICAL: Do not skip this. Fix the errors now."
+  exit 1
+fi
+
+# E2E tests
 pnpm test:e2e
 
 # Dependency map current
@@ -1187,7 +1212,7 @@ if [ $((feature_count % 5)) -eq 0 ] && [ $feature_count -gt 0 ]; then
   fi
 fi
 
-# Gate commit
+# Gate commit (only if TypeScript passed above)
 git commit -m "feat(atomic): [feature] — gate passed [N/N checks]"
 ```
 
@@ -1361,6 +1386,11 @@ If context from another project appears in the conversation — ignore it. Read 
 ## Git Discipline
 
 ```bash
+# BEFORE EVERY COMMIT: TypeScript must compile clean
+# Run: tsc --noEmit
+# If it fails: FIX THE ERRORS. Do not commit broken code.
+# Never use --no-verify or skip this check.
+
 # Snapshot before every major action
 git add -A && git commit -m "snapshot: before [action]"
 
@@ -1422,7 +1452,10 @@ Run before ending any session:
    → If no UNIT-PROGRESS.md: no in-progress unit, normal shutdown
 
 2. If no unit in progress: finish any incomplete work completely
-3. Run tsc --noEmit + pnpm test:e2e — fix any failures
+3. Run tsc --noEmit + pnpm test:e2e — FIX ANY FAILURES BEFORE COMMITTING
+   → If TypeScript fails: STOP. Fix errors. Do not proceed to commit.
+   → If tests fail: STOP. Fix tests. Do not proceed to commit.
+   → Only continue if both pass clean.
 4. Run pnpm dep:map — commit updated map
 5. Update .codebakers/BRAIN.md — current state, what next session starts with
 6. Update .codebakers/FIX-QUEUE.md — remaining items accurate
@@ -1963,6 +1996,7 @@ When user says `@rollback`, "rollback", "undo last feature", or `@rollback [N]`:
 15. Never start a major action without a rollback snapshot commit
 16. Never choose a paid service tier without flagging the cost to the user
 17. Never reference another project's context — always re-ground in project-profile.md
+18. Never commit code that doesn't compile — run tsc --noEmit before every git commit
 
 ---
 
