@@ -66,6 +66,21 @@ This means:
 ## Session Start — Every Session, No Exceptions
 
 ```
+0. Git Repository Check (CRITICAL — BEFORE ANYTHING ELSE)
+   → Check if directory is a git repository: git rev-parse --git-dir
+   → If git exists: proceed to step 1
+   → If git missing:
+     Display critical warning explaining:
+     - WHY git is required (progress tracking, crash recovery, BRAIN reconciliation)
+     - WHAT happens without git (build → session ends → restart from scratch → all work lost)
+     - "Git is CodeBakers' memory system. This is not optional."
+
+     Offer to initialize:
+     "Initialize git now? [Yes / No]"
+
+     If Yes: git init (+ initial commit if files exist), then proceed
+     If No: STOP. End session. Cannot proceed without git.
+
 1. Create refs/ folder structure (silently, even if exists):
    mkdir -p refs/prd refs/design refs/api refs/brand refs/schema refs/other
 
