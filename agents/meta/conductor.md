@@ -22,6 +22,69 @@ Everything else: decide, document, execute.
 Run in order. Never skip steps.
 
 ```
+0. GIT REPOSITORY CHECK — HARD REQUIREMENT (BEFORE ANYTHING ELSE)
+
+   Check if directory is a git repository:
+   → git rev-parse --git-dir 2>/dev/null
+
+   IF GIT EXISTS: proceed to step 1
+
+   IF GIT MISSING:
+
+   Display critical warning:
+
+   "🍞 CodeBakers: ⚠️ CRITICAL — Git repository required
+
+   This directory is not a git repository. CodeBakers CANNOT function without git.
+
+   WHY GIT IS REQUIRED:
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Without git, CodeBakers is fundamentally broken:
+
+   ✗ Cannot track what's been built (all progress lost on resume)
+   ✗ Cannot recover from crashes (no commit history)
+   ✗ Cannot tell which features are complete vs in-progress
+   ✗ Cannot reconcile BRAIN.md against actual code
+   ✗ Cannot enable @rollback (undo features)
+   ✗ Cannot commit atomic units (features ship incomplete)
+
+   WHAT WILL HAPPEN WITHOUT GIT:
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   → I build features for hours
+   → Your session ends (context limit, crash, etc.)
+   → You resume: 'continue building'
+   → I have NO IDEA what's done
+   → I restart from scratch
+   → All previous work lost
+
+   THIS IS NOT OPTIONAL. Git is CodeBakers' memory system.
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Initialize git now?
+
+   [Yes, initialize git] — I'll run: git init && git add . && git commit -m 'chore: initialize'
+   [No] — CodeBakers will exit. Run 'git init' manually, then restart."
+
+   WAIT for user response.
+
+   → If user says "Yes" or "initialize":
+     Run: git init
+     If files exist: git add . && git commit -m "chore: initialize git repository for CodeBakers"
+     If empty dir: just git init (first commit will happen after setup)
+     Proceed to step 1
+
+   → If user says "No" or refuses:
+     Display:
+     "🍞 CodeBakers: Understood. I cannot proceed without git.
+
+     To use CodeBakers:
+     1. Run: git init
+     2. Restart this session
+
+     Exiting now."
+
+     STOP. End session. Do not proceed.
+
 1. Check dep:map is installed
    → cat package.json | grep dep:map
    → If missing: install it (see CLAUDE.md Setup: dep:map)
@@ -586,6 +649,81 @@ After the Interview Agent completes and produces FLOWS.md:
      · Report: "[N] components extracted, [N] gaps flagged"
    → If DESIGN-CONTRACT.md exists: skip (already analyzed)
    → If refs/design/ empty: skip (no mockups)
+3.7. Check credentials and guide setup (interactive)
+   → Read CREDENTIALS-NEEDED.md to determine what services are required
+   → Check if .env.local or .env exists
+   → If .env.local exists with all required keys: proceed to step 4
+   → If missing or incomplete:
+
+   Display credentials prompt:
+
+   "🍞 CodeBakers: Before I can build, I need these exact credentials:
+
+   REQUIRED CREDENTIALS:
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   [For each service in CREDENTIALS-NEEDED.md, list:]
+
+   1. Supabase (3 items):
+      → Project URL (format: https://xxxxx.supabase.co)
+      → Anon key (starts with: eyJhbGci...)
+      → Service role key (starts with: eyJhbGci...)
+
+   2. Anthropic API key:
+      → API key (starts with: sk-ant-api03-...)
+
+   [Add other services as needed from CREDENTIALS-NEEDED.md]
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   HOW TO PROCEED:
+
+   Option 1: I'll guide you step-by-step
+   → Type 'show me how to get Supabase credentials'
+   → Type 'show me how to get Anthropic key'
+   → Type 'show me how to get [service] credentials'
+
+   Option 2: You already have them
+   → Paste credentials directly in chat (I'll parse and update .env.local)
+   → Your credentials stay local (never leave your machine)
+
+   Example format (any format works - I'll parse it):
+   ```
+   Supabase URL: https://xxxxx.supabase.co
+   Anon: eyJhbGci...
+   Service Role: eyJhbGci...
+   Anthropic: sk-ant-api03-...
+   ```
+
+   Or paste them however you want - formatted or unformatted.
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   What's your situation?
+   [Show me how to get credentials / I have them (paste below) / Already set up]"
+
+   WAIT for user response.
+
+   → If user says "show me how" or asks for guidance:
+     For each service, provide step-by-step instructions from CREDENTIALS-NEEDED.md
+     Wait for credentials, then parse and write to .env.local
+
+   → If user pastes credentials (detect URLs, keys, etc. in message):
+     Parse credentials intelligently:
+     · Supabase URL: look for https://*.supabase.co
+     · Anon key: look for eyJhbGci* (public/anon role)
+     · Service role: look for eyJhbGci* (service_role - longer than anon)
+     · Anthropic: look for sk-ant-api03-*
+     · Other keys: match patterns from CREDENTIALS-NEEDED.md
+
+     Write to .env.local (create from .env.local.example if needed)
+     Confirm: "✅ Credentials saved to .env.local"
+     Proceed to step 4
+
+   → If user says "already set up":
+     Verify .env.local exists and has required keys
+     If valid: proceed to step 4
+     If missing keys: show which keys are missing, wait for them
+
 4. Run: pnpm dep:map (initial empty map — establishes baseline)
 5. Break every flow into atomic units
 6. Dependency-order the units (what must exist before what)
