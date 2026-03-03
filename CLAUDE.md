@@ -67,6 +67,8 @@ This means:
 
 **🎨 Notifications:** Inline only. No browser toasts (react-hot-toast, sonner, react-toastify banned). All feedback appears in context where the action happened.
 
+**🧩 Browser Extensions:** Always suppress browser extension hydration warnings in Next.js `app/layout.tsx`. Pattern: `agents/patterns/browser-extensions.md`.
+
 ---
 
 ## Session Start — Every Session, No Exceptions
