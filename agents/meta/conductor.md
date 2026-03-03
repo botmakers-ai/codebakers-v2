@@ -85,6 +85,133 @@ Run in order. Never skip steps.
 
      STOP. End session. Do not proceed.
 
+0.25. PROTOCOL COMPLIANCE CHECK — ENFORCEMENT (CRITICAL)
+
+   BEFORE ANY OTHER ACTION: Verify CodeBakers protocol is active.
+
+   Run protocol compliance verification:
+   → If Windows: powershell -ExecutionPolicy Bypass -File scripts/verify-protocol-compliance.ps1
+   → If Unix: bash scripts/verify-protocol-compliance.sh
+
+   IF VERIFICATION SCRIPT MISSING:
+     Skip this check (new CodeBakers install, scripts not yet present)
+     Proceed to step 0.5
+
+   IF VERIFICATION PASSES (exit code 0):
+     → Protocol compliance: EXCELLENT or GOOD
+     → Proceed to step 0.5
+
+   IF VERIFICATION FAILS (exit code 1):
+     → Protocol violations detected
+     → Display violation report from script
+
+     Display enforcement message:
+
+     "🍞 CodeBakers: ⚠️ PROTOCOL VIOLATIONS DETECTED
+
+     The verification script found critical violations of CodeBakers protocol.
+     This means the project was NOT built with CodeBakers, or protocol was skipped.
+
+     DETECTED VIOLATIONS:
+     [Show violations from script output]
+
+     WHAT THIS MEANS:
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     → No .codebakers/ memory system (no BRAIN.md, DEPENDENCY-MAP.md, ERROR-LOG.md)
+     → Code built without dependency tracking (likely has stale UI bugs)
+     → No error learning active (same bugs can recur)
+     → No pattern enforcement (mutations, atomic units, etc.)
+
+     THIS PROJECT WAS NOT BUILT WITH CODEBAKERS PROTOCOL.
+
+     YOUR OPTIONS:
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+     1. Run @rebuild (RECOMMENDED)
+        → Creates safety branch (your code is safe)
+        → Retrofits .codebakers/ system
+        → Audits code against patterns
+        → Fixes violations systematically
+        → Generates full memory system
+        Time: 4-6 hours
+
+     2. Start fresh with CodeBakers v[version] (SAFEST)
+        → Build from scratch with full protocol active
+        → All patterns enforced from day 1
+        → No \"what did we miss?\" uncertainty
+        → Recommended if project is early-stage
+        Time: depends on project size
+
+     3. Initialize protocol NOW and continue (RISKY)
+        → I'll create .codebakers/ structure now
+        → Will follow protocol from this point forward
+        → BUT: existing code built without patterns (bugs likely present)
+        → Use only if you understand the risks
+
+     4. Exit (DON'T PROCEED)
+        → I cannot work effectively without protocol compliance
+        → Exiting now to prevent making violations worse
+
+     Choose: [1. @rebuild / 2. Start fresh / 3. Initialize now / 4. Exit]"
+
+     WAIT for user response.
+
+     → If "1" or "@rebuild" or "rebuild":
+       Load agents/meta/rebuild-specialist.md
+       Execute @rebuild command
+       (Rebuild specialist takes over)
+
+     → If "2" or "start fresh" or "fresh":
+       Display:
+       "🍞 CodeBakers: Starting fresh is the safest approach.
+
+       Steps to start fresh:
+       1. Backup this project: mv . ../[project]-old
+       2. Create new directory: mkdir [project]
+       3. Add CLAUDE.md: curl -o CLAUDE.md https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/CLAUDE.md
+       4. Run @interview to start with full protocol
+
+       Ready to proceed?"
+
+       WAIT for confirmation, then guide user through setup.
+
+     → If "3" or "initialize" or "initialize now":
+       Display warning:
+       "⚠️ WARNING: This is risky. Existing code was built without:
+       - Dependency tracking (DEPENDENCY-MAP.md)
+       - Error learning (ERROR-LOG.md)
+       - Pattern enforcement (mutation-handler, atomic-unit, etc.)
+
+       Bugs are likely present. Are you SURE you want to continue?
+       [Yes, I understand the risks / No, let me reconsider]"
+
+       WAIT for response.
+
+       If "Yes" or "I understand":
+         → Create .codebakers/ structure NOW
+         → Initialize BRAIN.md (infer from existing code)
+         → Initialize BUILD-LOG.md
+         → Initialize FIX-QUEUE.md
+         → Run pnpm dep:map (generate dependency map)
+         → Commit: "chore: initialize CodeBakers protocol (retroactive)"
+         → Log: "⚠️ Protocol initialized retroactively - existing code NOT audited"
+         → Proceed to step 0.5
+
+       If "No":
+         → Back to options (show options again)
+
+     → If "4" or "exit":
+       Display:
+       "🍞 CodeBakers: Understood. Cannot proceed without protocol compliance.
+
+       To use CodeBakers properly:
+       - Run @rebuild to retrofit protocol
+       - OR start fresh with protocol from day 1
+
+       Exiting now."
+
+       STOP. End session.
+
 0.5. CLAUDE.MD VERSION CHECK (automatic update notification)
 
    Check if CLAUDE.md needs updating:
@@ -1455,6 +1582,46 @@ pnpm test:e2e
 
 # Dependency map current
 pnpm dep:map
+
+# SELF-VERIFICATION (Protocol Compliance Check)
+# After every feature, verify I followed the protocol correctly
+echo "🍞 CodeBakers: Self-verification..."
+
+SELF_CHECK_FAILED=false
+
+# Check 1: Did I read DEPENDENCY-MAP.md before writing this feature?
+if ! grep -q "$(date +%Y-%m-%d)" .codebakers/BUILD-LOG.md 2>/dev/null; then
+  echo "⚠️ Self-check: No BUILD-LOG.md entry for today (did I log my actions?)"
+  SELF_CHECK_FAILED=true
+fi
+
+# Check 2: Is BRAIN.md being maintained?
+if [ -f ".codebakers/BRAIN.md" ]; then
+  brain_age_days=$(( ($(date +%s) - $(stat -c %Y .codebakers/BRAIN.md 2>/dev/null || stat -f %m .codebakers/BRAIN.md)) / 86400 ))
+  if [ $brain_age_days -gt 7 ]; then
+    echo "⚠️ Self-check: BRAIN.md not updated in $brain_age_days days (is it stale?)"
+    SELF_CHECK_FAILED=true
+  fi
+fi
+
+# Check 3: Was Error Sniffer run? (check if this session mentioned sniffer)
+# This is a soft check - just reminds me to run it
+
+if [ "$SELF_CHECK_FAILED" = true ]; then
+  echo ""
+  echo "🍞 CodeBakers: ⚠️ Self-verification found issues"
+  echo "I may not have followed protocol correctly for this feature."
+  echo "Protocol requires:"
+  echo "  1. Read BRAIN.md, DEPENDENCY-MAP.md, ERROR-LOG.md before coding"
+  echo "  2. Run Error Sniffer before writing code"
+  echo "  3. Log all actions to BUILD-LOG.md"
+  echo "  4. Update BRAIN.md when entities/decisions change"
+  echo ""
+  echo "Logging this violation to BUILD-LOG.md..."
+  echo "[$(date)] ⚠️ Self-verification failed - protocol may not have been followed fully" >> .codebakers/BUILD-LOG.md
+  echo ""
+  echo "Proceeding with commit, but this should be reviewed."
+fi
 
 # BRAIN.md health check (every 5 features - automatic)
 feature_count=$(git log --grep="feat(atomic):" --oneline | wc -l)

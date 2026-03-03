@@ -1,12 +1,13 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.2.1
+**Version:** 4.3.0
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
+- **4.3.0** (2026-03-03): **ENFORCEMENT SYSTEM** — 3-layer protocol enforcement: session start barrier (blocks if violations detected), self-verification (Claude checks itself after every feature), @verify command (user can audit anytime). Scripts detect missing .codebakers/, stale dependencies, TypeScript errors. Violations no longer silently ignored.
 - **4.2.1** (2026-03-03): Added Manual Task Protocol — enforces CodeBakers system for ALL user requests (no more skipping context/dependencies for quick fixes)
 - **4.2.0** (2026-03-03): Added Error Sniffer (proactive error prevention with 9 categories), Tailwind CSS variables pattern (prevents "border-border class does not exist" errors)
 - **4.1.1** (2026-03-02): Added browser extension hydration warning suppression pattern
@@ -522,6 +523,159 @@ Every feature is a complete vertical slice: API + store + UI states + tests. All
 
 ---
 
+## Protocol Enforcement
+
+**CodeBakers is instruction-based, not technically enforced.** This means violations are possible if instructions are ignored.
+
+### The Enforcement Problem
+
+**What happened before v4.3.0:**
+
+```
+Project has CLAUDE.md with full CodeBakers instructions
+  ↓
+Claude sees instructions but decides to skip them
+  ↓
+Works like "regular coding assistant"
+  ↓
+No .codebakers/ created
+No dependency tracking
+No error learning
+No pattern enforcement
+  ↓
+Result: "mostly working" code with hidden bugs
+```
+
+**This was an enforcement gap — instructions existed but weren't followed.**
+
+### The Enforcement Solution (3-Layer System)
+
+**Layer 1: Session Start Barrier**
+
+Every session runs protocol verification BEFORE any other action:
+
+```
+Session starts
+  ↓
+Step 0.25: Protocol Compliance Check
+  ↓
+Runs: scripts/verify-protocol-compliance.ps1 (or .sh)
+  ↓
+Checks:
+  - Git repository exists
+  - .codebakers/ directory present
+  - BRAIN.md exists and recent (<7 days)
+  - DEPENDENCY-MAP.md exists and recent (<3 days)
+  - BUILD-LOG.md exists
+  - ERROR-LOG.md exists
+  - TypeScript compiles
+  - Atomic commits present
+  - .codebakers/ committed to git
+  ↓
+If VIOLATIONS detected:
+  → BLOCKS session
+  → Offers: @rebuild / Start fresh / Initialize now / Exit
+  → User MUST choose before proceeding
+  ↓
+If PASS: Session continues normally
+```
+
+**Layer 2: Self-Verification**
+
+After every feature, Claude checks its own compliance:
+
+```
+Feature complete
+  ↓
+Self-verification runs automatically:
+  - Did I log to BUILD-LOG.md today?
+  - Is BRAIN.md updated recently?
+  - Did I run Error Sniffer?
+  ↓
+If violations detected:
+  - Logs to BUILD-LOG.md
+  - Warns: "Protocol may not have been followed fully"
+  - Proceeds but flagged for review
+```
+
+**Layer 3: User Monitoring (@verify command)**
+
+Users can verify compliance anytime:
+
+```bash
+@verify   # Run protocol compliance check
+
+Returns:
+✓ EXCELLENT - All checks passed
+⚠️ GOOD - Warnings but no critical violations
+✗ VIOLATIONS - Critical issues detected (with solutions)
+```
+
+### What This Achieves
+
+**Not technical enforcement** (Claude Code doesn't have hooks/middleware)
+
+**But provides:**
+- ✅ Session start barrier (catches violations before work begins)
+- ✅ Self-verification (Claude checks itself after every feature)
+- ✅ User visibility (you can verify compliance anytime with @verify)
+- ✅ Automated detection (scripts check for missing files, stale dependencies)
+- ✅ Actionable solutions (offers @rebuild, start fresh, or initialize)
+
+**Result: Violations are detected early and fixed immediately, not discovered weeks later.**
+
+### When Protocol Is NOT Followed
+
+**Symptoms:**
+- No .codebakers/ directory
+- No DEPENDENCY-MAP.md
+- No BUILD-LOG.md entries
+- No ERROR-LOG.md
+- Code commits without "feat(atomic):" pattern
+- TypeScript errors committed
+
+**What happens:**
+1. Session start barrier detects violations
+2. Blocks all work until resolved
+3. Offers solutions (rebuild, fresh start, initialize)
+4. User must choose before proceeding
+
+**The protocol cannot be silently ignored anymore.**
+
+### Verification Scripts
+
+**Location:** `scripts/verify-protocol-compliance.ps1` (Windows) or `scripts/verify-protocol-compliance.sh` (Unix/Mac)
+
+**Checks 10 compliance points:**
+1. Git repository exists
+2. .codebakers/ directory present
+3. BRAIN.md exists and recent
+4. DEPENDENCY-MAP.md exists and recent
+5. BUILD-LOG.md exists
+6. ERROR-LOG.md exists (or empty project)
+7. FIX-QUEUE.md exists
+8. TypeScript compiles (if TS project)
+9. Recent commits follow atomic pattern
+10. .codebakers/ committed to git
+
+**Exit codes:**
+- `0` = PASS (excellent or good with warnings)
+- `1` = FAIL (violations detected)
+
+**Run manually:**
+```bash
+# Windows
+powershell -ExecutionPolicy Bypass -File scripts/verify-protocol-compliance.ps1
+
+# Unix/Mac
+bash scripts/verify-protocol-compliance.sh
+
+# Or use @verify command
+@verify
+```
+
+---
+
 ## Agent Auto-Chaining
 
 QA gate fails → Fix Executor runs automatically (never just report and block)
@@ -571,6 +725,7 @@ Commands also work in plain English (e.g., "rebuild this app", "show me the flow
 - `@interview` — start project interview (new projects)
 - `@rca` — deep root cause analysis on pasted error. Traces data flow, finds systemic issues, fixes pattern comprehensively. Auto-runs on recurring errors.
 - `@sniffer` — run Error Sniffer to detect and prevent known error patterns before writing code. Shows confidence-based warnings, allows overrides. Sub-commands: `@sniffer report` (show full analysis), `@sniffer ignore [pattern]` (add to ignore list), `@sniffer confidence` (show accuracy stats).
+- `@verify` — verify CodeBakers protocol compliance. Checks for missing memory files (.codebakers/), stale dependencies, TypeScript errors, atomic commits. Returns PASS/WARNING/FAIL. Use to verify protocol is active before starting work or to audit existing projects.
 - `@fix` — run fix executor on current findings
 - `@flows` — show or regenerate FLOWS.md
 - `@memory` — show BRAIN.md summary
