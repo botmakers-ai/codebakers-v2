@@ -1,8 +1,14 @@
 # 🍞 CodeBakers V4
 
+**Version:** 4.1.0
+
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
+
+**Changelog:**
+- **4.1.0** (2026-03-02): Added git requirement check, TypeScript pre-commit enforcement, improved credentials flow, mockup analyzer
+- **4.0.0** (Initial): Core CodeBakers V4 framework
 
 ---
 
@@ -80,6 +86,13 @@ This means:
 
      If Yes: git init (+ initial commit if files exist), then proceed
      If No: STOP. End session. Cannot proceed without git.
+
+0.5. CLAUDE.md Version Check (automatic - runs every session)
+   → Check current version vs latest from GitHub
+   → If update available: notify user with changelog
+   → User can update, skip, or view diff first
+   → Backs up current version before updating
+   → Fast (3-second timeout, skips if network unavailable)
 
 1. Create refs/ folder structure (silently, even if exists):
    mkdir -p refs/prd refs/design refs/api refs/brand refs/schema refs/other

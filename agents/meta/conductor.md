@@ -85,6 +85,79 @@ Run in order. Never skip steps.
 
      STOP. End session. Do not proceed.
 
+0.5. CLAUDE.MD VERSION CHECK (automatic update notification)
+
+   Check if CLAUDE.md needs updating:
+
+   1. Check if CLAUDE.md exists in current directory:
+      → If missing: skip version check (new project will get latest during interview)
+      → If exists: proceed to version check
+
+   2. Extract current version from CLAUDE.md:
+      → grep "^\*\*Version:\*\*" CLAUDE.md
+      → Parse version number (format: X.Y.Z)
+      → If no version line found: assume 4.0.0 (legacy)
+
+   3. Fetch latest version from GitHub (silent, fast):
+      → curl -s -m 3 https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/CLAUDE.md | grep "^\*\*Version:\*\*" | head -1
+      → Parse version number
+      → If curl fails or times out: skip update check (network issue, continue normally)
+
+   4. Compare versions:
+      → If current >= latest: skip (already up to date)
+      → If current < latest:
+
+        Display update notification:
+
+        "🍞 CodeBakers: Framework update available
+
+        Your CLAUDE.md: v[X.Y.Z]
+        Latest version: v[X.Y.Z]
+
+        What's new in latest version:
+        [Fetch and display changelog from GitHub CLAUDE.md]
+
+        Update now? (Recommended - takes 5 seconds)
+        [Yes, update / No, skip this session / Show diff first]"
+
+        WAIT for user response.
+
+        → If "Yes" or "update":
+          # Backup current version
+          cp CLAUDE.md CLAUDE.md.backup.$(date +%s)
+
+          # Download latest
+          curl -s https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/CLAUDE.md > CLAUDE.md
+
+          # Commit update
+          git add CLAUDE.md
+          git commit -m "chore: update CLAUDE.md to v[version] (framework update)"
+
+          "✅ CLAUDE.md updated to v[version]
+          Backup saved: CLAUDE.md.backup.[timestamp]
+          Proceeding with session..."
+
+          Proceed to step 1
+
+        → If "Show diff first":
+          # Show changes
+          curl -s https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/CLAUDE.md > /tmp/claude-latest.md
+          diff CLAUDE.md /tmp/claude-latest.md | head -50
+
+          "Review changes above. Update now?
+          [Yes / No]"
+
+          WAIT for response, then handle as above
+
+        → If "No" or "skip":
+          "Continuing with current version.
+          (To update later: copy from https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/CLAUDE.md)"
+
+          Proceed to step 1
+
+   5. Log check to BUILD-LOG.md:
+      echo "[$(date)] CLAUDE.md version check: current v[X.Y.Z], latest v[X.Y.Z] [updated/skipped]" >> .codebakers/BUILD-LOG.md
+
 1. Check dep:map is installed
    → cat package.json | grep dep:map
    → If missing: install it (see CLAUDE.md Setup: dep:map)
