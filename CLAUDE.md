@@ -1,12 +1,13 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.1.1
+**Version:** 4.2.0
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
+- **4.2.0** (2026-03-03): Added Error Sniffer — proactive error prevention system with confidence-based warnings and false positive mitigation
 - **4.1.1** (2026-03-02): Added browser extension hydration warning suppression pattern
 - **4.1.0** (2026-03-02): Added git requirement check, TypeScript pre-commit enforcement, improved credentials flow, mockup analyzer, auto version checking
 - **4.0.0** (Initial): Core CodeBakers V4 framework
@@ -495,6 +496,7 @@ Commands also work in plain English (e.g., "rebuild this app", "show me the flow
 - `@rebuild` — creates a `rebuild/[date]` branch, then runs full autonomous pipeline: dep map → read → reconstruct intent → audit → fix → verify → report. Merge when satisfied. Your working branch is never touched.
 - `@interview` — start project interview (new projects)
 - `@rca` — deep root cause analysis on pasted error. Traces data flow, finds systemic issues, fixes pattern comprehensively. Auto-runs on recurring errors.
+- `@sniffer` — run Error Sniffer to detect and prevent known error patterns before writing code. Shows confidence-based warnings, allows overrides. Sub-commands: `@sniffer report` (show full analysis), `@sniffer ignore [pattern]` (add to ignore list), `@sniffer confidence` (show accuracy stats).
 - `@fix` — run fix executor on current findings
 - `@flows` — show or regenerate FLOWS.md
 - `@memory` — show BRAIN.md summary

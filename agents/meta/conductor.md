@@ -855,6 +855,14 @@ PROMPT EXPANSION (agents/meta/prompt-engineer.md)
   → Write full internal execution prompt
   → Execute against the expansion, never the raw item
   ↓
+ERROR SNIFFER (agents/meta/error-sniffer.md — automatic prevention)
+  → Scan ERROR-LOG.md for known patterns
+  → Identify patterns applicable to this specific task
+  → Display warnings: HIGH → MEDIUM → LOW confidence
+  → User chooses: Apply fixes / Proceed anyway / Show details / Ignore
+  → Inject preventions into implementation plan
+  → Log applied preventions to BUILD-LOG.md
+  ↓
 Build atomic unit (agents/patterns/atomic-unit.md)
   → schema → API → store → UI → states → tests
   → Declare checklist in FIX-QUEUE.md before coding
@@ -912,6 +920,14 @@ PROMPT EXPANSION (agents/meta/prompt-engineer.md)
   → Identify applicable patterns
   → Write full internal execution prompt
   → Execute against the expansion, never the raw item
+  ↓
+ERROR SNIFFER (agents/meta/error-sniffer.md — automatic prevention)
+  → Scan ERROR-LOG.md for known patterns
+  → Identify patterns applicable to this specific task
+  → Display warnings: HIGH → MEDIUM → LOW confidence
+  → User chooses: Apply fixes / Proceed anyway / Show details / Ignore
+  → Inject preventions into implementation plan
+  → Log applied preventions to BUILD-LOG.md
   ↓
 Build atomic unit (agents/patterns/atomic-unit.md)
   → schema → API → store → UI → states → tests
@@ -989,7 +1005,7 @@ Before executing any task — user command or queue item — load and run:
 → agents/meta/prompt-engineer.md
 ```
 
-Exempt: system commands (@rebuild, @interview, @research, @status, @help, @depmap, @queue, @memory, @team, @launch, @assumptions, @expand, @ui, @fix, @flows, @agent)
+Exempt: system commands (@rebuild, @interview, @research, @status, @help, @depmap, @queue, @memory, @team, @launch, @assumptions, @expand, @ui, @fix, @flows, @agent, @sniffer)
 
 ---
 
@@ -1002,9 +1018,9 @@ Select the right agents for each task. Maximum 4 agents active simultaneously.
 | New project | interview → conductor → build loop |
 | @rebuild | rebuild-specialist (full pipeline) |
 | @rca or error pasted | error-investigator (deep RCA) |
-| Any mutation | prompt-engineer + mutation-handler + atomic-unit |
-| Any new feature | prompt-engineer + atomic-unit |
-| Fix queue item | prompt-engineer + relevant pattern |
+| Any mutation | prompt-engineer + error-sniffer + mutation-handler + atomic-unit |
+| Any new feature | prompt-engineer + error-sniffer + atomic-unit |
+| Fix queue item | prompt-engineer + error-sniffer + relevant pattern |
 | QA failure | fix-executor |
 | Build complete | completeness-verifier → pre-launch |
 | Error in console/build | error-investigator (smart triage) |
