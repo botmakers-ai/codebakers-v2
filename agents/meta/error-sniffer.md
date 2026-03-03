@@ -449,7 +449,54 @@ useEffect(() => {
 }, [userId])  // ← Correct"
 ```
 
-### 7. API Errors
+### 7. Build Errors
+
+**Pattern: Tailwind CSS custom properties not configured**
+```typescript
+// Detected in ERROR-LOG:
+"Syntax error: The `border-border` class does not exist"
+"The `ring-ring` class does not exist"
+
+// Root cause:
+Using shadcn/ui or custom design tokens without configuring Tailwind CSS variables
+
+// Prevention before adding shadcn/ui components:
+"⚠️ shadcn/ui setup detected. CRITICAL: Configure Tailwind CSS variables first.
+
+This pattern causes build failures 100% of the time.
+
+Required setup:
+1. Add CSS variables to globals.css (see: agents/patterns/tailwind-css-variables.md)
+2. Configure tailwind.config.ts to use CSS variables
+3. Install tailwindcss-animate plugin
+
+Without this setup:
+→ Build fails with 'border-border class does not exist'
+→ All shadcn/ui components broken
+→ 30+ minutes debugging
+
+Apply complete setup now?
+[Yes — set up automatically / Show me the pattern / I'll do it manually]"
+
+// Full pattern documentation:
+→ agents/patterns/tailwind-css-variables.md
+```
+
+**Pattern: Missing TypeScript types for dependencies**
+```typescript
+// Detected in ERROR-LOG:
+"Could not find a declaration file for module 'some-package'"
+
+// Prevention before installing package:
+"⚠️ Installing package without TypeScript types.
+
+// After: pnpm add some-package
+// Also add: pnpm add -D @types/some-package
+
+Or check if package has built-in types."
+```
+
+### 8. API Errors
 
 **Pattern: Missing error handling**
 ```typescript
@@ -483,7 +530,7 @@ try {
 }"
 ```
 
-### 8. Integration Errors
+### 9. Integration Errors
 
 **Pattern: Webhook signature verification missing**
 ```typescript

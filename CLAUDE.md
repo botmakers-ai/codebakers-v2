@@ -7,7 +7,7 @@
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
-- **4.2.0** (2026-03-03): Added Error Sniffer — proactive error prevention system with confidence-based warnings and false positive mitigation
+- **4.2.0** (2026-03-03): Added Error Sniffer (proactive error prevention with 9 categories), Tailwind CSS variables pattern (prevents "border-border class does not exist" errors)
 - **4.1.1** (2026-03-02): Added browser extension hydration warning suppression pattern
 - **4.1.0** (2026-03-02): Added git requirement check, TypeScript pre-commit enforcement, improved credentials flow, mockup analyzer, auto version checking
 - **4.0.0** (Initial): Core CodeBakers V4 framework
@@ -70,6 +70,8 @@ This means:
 **🎨 Notifications:** Inline only. No browser toasts (react-hot-toast, sonner, react-toastify banned). All feedback appears in context where the action happened.
 
 **🧩 Browser Extensions:** Always suppress browser extension hydration warnings in Next.js `app/layout.tsx`. Pattern: `agents/patterns/browser-extensions.md`.
+
+**🎨 Tailwind CSS:** When using shadcn/ui or custom design tokens, ALWAYS configure CSS variables in `globals.css` and `tailwind.config.ts` BEFORE adding any components. Pattern: `agents/patterns/tailwind-css-variables.md`. Without this: build fails with "border-border class does not exist".
 
 ---
 
