@@ -1,13 +1,14 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.1.0
+**Version:** 4.1.1
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
-- **4.1.0** (2026-03-02): Added git requirement check, TypeScript pre-commit enforcement, improved credentials flow, mockup analyzer
+- **4.1.1** (2026-03-02): Added browser extension hydration warning suppression pattern
+- **4.1.0** (2026-03-02): Added git requirement check, TypeScript pre-commit enforcement, improved credentials flow, mockup analyzer, auto version checking
 - **4.0.0** (Initial): Core CodeBakers V4 framework
 
 ---
