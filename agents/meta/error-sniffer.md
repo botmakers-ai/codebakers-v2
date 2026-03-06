@@ -556,6 +556,129 @@ export async function POST(request: Request) {
 }"
 ```
 
+### 10. Silent Error Components
+
+**Pattern: Error component returning null**
+```typescript
+// Detected in ERROR-LOG:
+"User saw blank screen during error, no feedback"
+"Error occurred but component returned null - user stuck"
+
+// Root cause:
+Error boundary or catch block renders nothing, hiding the error from user
+
+// Prevention before writing error handling:
+"⚠️ CRITICAL: Error components must NEVER return null. Users need feedback.
+
+// Before (WRONG):
+export default function ErrorComponent({ error }: { error: Error }) {
+  console.error(error)
+  return null  // ← User sees blank screen
+}
+
+// After (CORRECT):
+export default function ErrorComponent({ error }: { error: Error }) {
+  return (
+    <div className='p-4 border border-red-200 bg-red-50 rounded-lg'>
+      <h2 className='text-lg font-semibold text-red-900'>
+        Something went wrong
+      </h2>
+      <p className='mt-2 text-sm text-red-700'>
+        {error.message || 'An unexpected error occurred'}
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        className='mt-4 px-4 py-2 bg-red-600 text-white rounded'
+      >
+        Reload page
+      </button>
+    </div>
+  )
+}"
+
+Confidence: HIGH
+Impact if ignored: CRITICAL — user has no way to recover, appears as broken app
+```
+
+**Pattern: Missing error boundary fallback UI**
+```typescript
+// Detected in ERROR-LOG:
+"React error boundary with no fallback - white screen of death"
+
+// Prevention:
+"⚠️ Error boundary detected without fallback UI.
+
+// Before (WRONG):
+<ErrorBoundary>
+  <App />
+</ErrorBoundary>
+
+// After (CORRECT):
+<ErrorBoundary
+  fallback={({ error, resetError }) => (
+    <div className='min-h-screen flex items-center justify-center p-4'>
+      <div className='max-w-md w-full'>
+        <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+          Application Error
+        </h1>
+        <p className='text-gray-700 mb-4'>
+          {error.message}
+        </p>
+        <div className='flex gap-2'>
+          <button onClick={resetError}>Try again</button>
+          <button onClick={() => window.location.href = '/'}>
+            Go home
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+>
+  <App />
+</ErrorBoundary>"
+
+Confidence: HIGH
+Impact if ignored: CRITICAL — app crashes leave users with no recovery path
+```
+
+**Pattern: API error with no user feedback**
+```typescript
+// Detected in ERROR-LOG:
+"Network error occurred, user saw no message"
+"API returned 500, catch block logged but didn't show user"
+
+// Prevention:
+"⚠️ API call detected in component. MUST show error to user.
+
+// Before (WRONG):
+try {
+  await submitForm()
+} catch (error) {
+  console.error(error)  // ← Logged but user sees nothing
+}
+
+// After (CORRECT):
+const [error, setError] = useState<string | null>(null)
+
+try {
+  await submitForm()
+  setError(null)  // Clear any previous errors
+} catch (error) {
+  // User sees this inline where the action happened
+  setError(error instanceof Error ? error.message : 'Failed to submit form')
+}
+
+// In JSX:
+{error && (
+  <div className='mt-2 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700'>
+    {error}
+  </div>
+)}"
+
+Confidence: HIGH
+Impact if ignored: HIGH — user doesn't know action failed, may retry or give up
+```
+
 ---
 
 ## Integration with Build Flow

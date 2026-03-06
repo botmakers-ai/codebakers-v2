@@ -63,6 +63,7 @@ GATE
   □ Hard refresh — state correct
   □ No console errors
   □ pnpm dep:map run and committed
+  □ BUILD-LOG.md has entry for every step (count matches wip commits)
   □ JSDoc on every new component and function
   □ API route documented inline (accepts, returns, errors)
   □ Every non-obvious decision has a // Why: comment
@@ -224,20 +225,59 @@ When declaring a unit in FIX-QUEUE.md, specify the type. This determines the ste
 # 1. Check off step in UNIT-PROGRESS.md
 # 2. Update "Last Updated" timestamp
 # 3. Update "Resume Context" with what's next
-# 4. wip commit
+
+# 4. AUTO-LOG to BUILD-LOG.md (BEFORE commit)
+# This is automatic — system logs facts, then prompts for reasoning
+cat >> .codebakers/BUILD-LOG.md << EOF
+[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] wip([unit-name]): [step-name]
+Files: [list files changed]
+What: [1-line summary of what was done]
+Why: [1-2 sentences explaining reasoning/decisions]
+Patterns applied: [error-sniffer preventions or N/A]
+---
+EOF
+
+# 5. wip commit (BUILD-LOG.md must be modified in last 2 minutes or commit fails)
 git add -A
+
+# Gate check before commit
+if [ "$(git diff --cached .codebakers/BUILD-LOG.md)" = "" ]; then
+  echo "❌ BUILD-LOG.md not updated. Cannot commit without logging."
+  echo "Update BUILD-LOG.md with what you just did, then retry commit."
+  exit 1
+fi
+
 git commit -m "wip([unit-name]): [step-name]"
 
-# 5. Update BRAIN.md Mid-Build State
+# 6. Update BRAIN.md Mid-Build State
 #    - Increment completed steps count
 #    - Update last commit hash
 #    - Update next step description
-
-# 6. Append to BUILD-LOG.md
-echo "[timestamp] wip([unit-name]): [step-name] — [what was done]" >> .codebakers/BUILD-LOG.md
 ```
 
-Never batch multiple steps. One step = one wip commit = one state update.
+**BUILD-LOG.md Format (Auto + Manual):**
+```markdown
+[2026-03-05T14:32:00Z] wip(delete-account): schema/types
+Files: src/lib/schemas/account.ts
+What: Created DeleteAccountSchema with Zod validation
+Why: Need type-safe validation for account deletion endpoint. Chose soft delete (deleted_at timestamp) to preserve data for audit trail rather than hard delete.
+Patterns applied: N/A
+---
+
+[2026-03-05T14:45:00Z] wip(delete-account): API route
+Files: src/app/api/account/delete/route.ts
+What: Implemented DELETE endpoint with HOF wrapper, RLS filters
+Why: HOF wrapper enforces auth check. Filter by id AND user_id prevents cross-user deletion (error-sniffer warning applied).
+Patterns applied: Error Sniffer - "Delete mutation without user_id filter" (HIGH confidence)
+---
+```
+
+**Commit gate enforcement:**
+- BUILD-LOG.md MUST be modified in the staged changes
+- Without BUILD-LOG.md update → commit fails → forces logging before proceeding
+- This prevents "defer logging for later" which never happens
+
+Never batch multiple steps. One step = one wip commit = one BUILD-LOG.md entry.
 
 ### On Unit Completion
 
@@ -512,6 +552,7 @@ GATE CHECK
   □ Hard refresh — state correct after reload
   □ No console errors in browser
   □ pnpm dep:map run and result committed
+  □ BUILD-LOG.md updated (1 entry per step, count matches wip commits)
   □ JSDoc on every new component and function
   □ API route documented inline (accepts, returns, errors)
   □ Every non-obvious decision has a // Why: comment

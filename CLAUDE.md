@@ -1,12 +1,16 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.3.0
+**Version:** 4.4.0
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
+- **4.4.0** (2026-03-05): **LEARNING & INTELLIGENCE UPGRADE** — 3-tier improvement system from EaseMail lessons:
+  - **TIER 1 (Memory System):** BUILD-LOG.md auto-logging with commit gate enforcement, Error Sniffer detects silent error components, Prisma+Supabase config check at session start
+  - **TIER 2 (Pattern Library):** SSR-safe imports pattern (fixes "window is not defined"), OAuth token management pattern (prevents cache poisoning, scope conflicts, admin consent errors)
+  - **TIER 3 (Domain Intelligence):** Domain context injection system - Email, CRM, Dashboard domains with auto-applied UX patterns, field display logic, and feature expectations
 - **4.3.0** (2026-03-03): **ENFORCEMENT SYSTEM** — 3-layer protocol enforcement: session start barrier (blocks if violations detected), self-verification (Claude checks itself after every feature), @verify command (user can audit anytime). Scripts detect missing .codebakers/, stale dependencies, TypeScript errors. Violations no longer silently ignored.
 - **4.2.1** (2026-03-03): Added Manual Task Protocol — enforces CodeBakers system for ALL user requests (no more skipping context/dependencies for quick fixes)
 - **4.2.0** (2026-03-03): Added Error Sniffer (proactive error prevention with 9 categories), Tailwind CSS variables pattern (prevents "border-border class does not exist" errors)
@@ -117,6 +121,34 @@ This means:
 5. Read .codebakers/DEPENDENCY-MAP.md (if exists) ← live dependency map
 6. Read last 30 lines of .codebakers/BUILD-LOG.md (if exists)
 7. Read last 10 entries of .codebakers/ERROR-LOG.md (if exists)
+7.5. Environment & Stack Detection (automatic, silent unless issues found):
+   → Check if package.json contains @prisma/client AND .env contains "supabase"
+   → If both detected:
+     Check .env for DIRECT_URL variable
+     Check DATABASE_URL uses port 5432 (not 6543 pooler)
+     If missing/incorrect:
+       Display: "🍞 CodeBakers: ⚠️ Prisma + Supabase detected
+
+       CRITICAL: Prisma requires DIRECT_URL (port 5432), not pooler connection.
+
+       Current state:
+       DATABASE_URL: [shows current or 'missing']
+       DIRECT_URL: [shows current or 'MISSING']
+
+       Fix now:
+       Add to .env:
+       DIRECT_URL=postgresql://postgres:[password]@[project-ref].supabase.co:5432/postgres
+
+       Without this: All Prisma migrations and introspection will fail.
+
+       [Fix automatically / Show me docs / I'll fix manually]"
+
+       If user chooses "Fix automatically":
+         → Offer to extract credentials from DATABASE_URL
+         → Generate DIRECT_URL with port 5432
+         → Update .env
+         → Verify connection works
+
 8. Run: tsc --noEmit && git status && git log --oneline -5
 
 9. Greet:
@@ -408,6 +440,188 @@ Execute to that standard. Document automatic decisions in ASSUMPTIONS.md.
 - Multi-tenant → org-level isolation everywhere
 - Any form → validation feedback before submit, not just on submit
 - Mobile → works correctly, not just "technically renders"
+
+---
+
+## Domain Context Injection
+
+**What it is:** Automatic loading of domain-specific expectations based on app type.
+
+**Why it matters:** Different app types have different user expectations. An email client user expects threading and unread counts. A CRM user expects pipeline stages and activity timelines. A dashboard user expects real-time updates and drill-down. You shouldn't have to explain these—the system should know.
+
+### How It Works
+
+**1. Interview Agent asks:** "What type of app is this?"
+```
+Options:
+- Email client
+- CRM / Sales pipeline
+- Analytics dashboard
+- E-commerce store
+- Social media / Feed
+- Project management
+- [Other - describe]
+```
+
+**2. System stores in project-profile.md:**
+```markdown
+domain: email
+```
+
+**3. System loads domain file:**
+```
+→ Read agents/domains/email.md
+→ Inject expectations into build context
+→ Apply automatically during feature implementation
+```
+
+**4. Domain expectations applied:**
+
+**Example (Email Client):**
+```
+User: "Build inbox view"
+
+System (without domain context):
+  → Builds basic list of messages
+  → Shows FROM field everywhere
+  → No unread counts
+  → No threading
+  → Generic empty state
+
+System (with domain context - email.md loaded):
+  → Builds list with threading (groups by conversation)
+  → Shows FROM in inbox, TO in sent folder (context-aware)
+  → Unread count badges on folders
+  → Empty state: "No messages in your inbox" + compose button
+  → Search inherits folder scope (inbox search ≠ global)
+```
+
+### Available Domains
+
+**Current domain files:**
+- `agents/domains/email.md` — Email clients (threading, folders, sender/recipient context)
+- `agents/domains/crm.md` — CRM systems (pipeline, deals, activity timeline)
+- `agents/domains/dashboard.md` — Analytics dashboards (KPIs, trends, drill-down)
+
+**Coming soon:**
+- E-commerce (cart, checkout, inventory)
+- Social media (feeds, likes, comments, followers)
+- Project management (tasks, boards, dependencies)
+
+**Creating new domain:**
+```bash
+# Copy template
+cp agents/domains/_template.md agents/domains/[your-domain].md
+
+# Fill in:
+- Core entities and fields
+- UX patterns (what users expect)
+- Mutation patterns (how data changes)
+- Security/permissions defaults
+- Performance expectations
+- Anti-patterns (what NOT to do)
+```
+
+### What Gets Auto-Decided
+
+**With domain context loaded:**
+- ✅ Feature defaults (email → threading, CRM → pipeline, dashboard → KPIs)
+- ✅ Field display logic (email sent folder shows TO not FROM)
+- ✅ Empty state messaging (domain-specific, not generic)
+- ✅ Search scope (inherit from UI context)
+- ✅ Standard workflows (don't ask about obvious features)
+
+**Still ask user about:**
+- ❓ External integrations (Gmail API vs. IMAP vs. custom)
+- ❓ Industry-specific fields (real estate CRM ≠ insurance CRM)
+- ❓ Custom business logic (revenue recognition rules, churn definition)
+- ❓ Access control model (single-tenant vs. multi-tenant)
+
+### Integration with Build Flow
+
+**Interview Agent:**
+```
+After gathering basic info:
+  → Ask: "What type of app is this?"
+  → Store: project-profile.md (domain: [type])
+  → Load: agents/domains/[type].md
+  → Generate FLOWS.md with domain-specific features pre-populated
+```
+
+**Feature Implementation:**
+```
+Before building any feature:
+  1. Read project-profile.md → extract domain
+  2. Load agents/domains/[domain].md
+  3. Check domain file for:
+     - Expected fields for this entity
+     - UX patterns for this feature type
+     - Mutation patterns (what stores to update)
+     - Performance expectations (caching, pagination)
+  4. Apply domain defaults automatically
+  5. Log automatic decisions to ASSUMPTIONS.md
+```
+
+**Example Flow:**
+```
+User: "Build delete account feature"
+System:
+  → Reads project-profile.md: domain = email
+  → Loads agents/domains/email.md
+  → Sees: "Delete message → soft delete to Trash folder, update unread counts"
+  → Applies pattern automatically:
+    - Move to Trash (not permanent delete)
+    - Update inbox unread count (-1 if was unread)
+    - Update thread unread count
+    - If last message in view → navigate to next OR empty state
+  → Logs to ASSUMPTIONS.md:
+    "Decision: Soft delete to Trash (domain: email standard pattern)"
+```
+
+### When Domain Context Doesn't Apply
+
+**Edge cases require user input:**
+```
+Domain says: "Inbox shows FROM field, Sent shows TO field"
+User wants: "Always show both FROM and TO"
+
+→ Domain provides default, user can override
+→ Log to ASSUMPTIONS.md: "Override: showing FROM+TO in all folders (user request)"
+```
+
+**Multi-domain apps:**
+```
+project-profile.md:
+  primary_domain: crm
+  secondary_domains: [email, dashboard]
+
+→ Load all three domain files
+→ Primary domain (crm) takes precedence for conflicts
+→ Apply email patterns to mail module
+→ Apply dashboard patterns to reports module
+```
+
+### Benefits
+
+**1. Fewer Questions**
+- Don't ask: "Should inbox show unread counts?" (domain knows: yes)
+- Don't ask: "Should deleted emails be permanent?" (domain knows: no, trash first)
+- Do ask: "Which email provider API?" (domain doesn't know)
+
+**2. Better Defaults**
+- Features ship with correct UX patterns for the domain
+- Empty states are specific, not generic
+- Field display follows domain conventions
+
+**3. Faster Builds**
+- FLOWS.md pre-populated with expected features
+- Implementation uses domain patterns automatically
+- Less back-and-forth clarification
+
+**4. Learning Across Projects**
+- Domain files codify best practices
+- Email app #5 benefits from lessons learned in email app #1-4
+- Patterns improve over time
 
 ---
 
