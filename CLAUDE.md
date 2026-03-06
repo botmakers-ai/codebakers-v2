@@ -1,12 +1,16 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.4.0
+**Version:** 4.5.0
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
+- **4.5.0** (2026-03-05): **TECHNICAL ENFORCEMENT & VALIDATION** — Solves instruction-based enforcement problem with technical controls:
+  - **PHASE 1 (Enforcement):** Git pre-commit hooks (blocks commits if violations), verification scripts (10 automated checks), pattern metrics tracking (usage + accuracy data)
+  - **PHASE 2 (Simplification):** Progressive disclosure modes (Beginner/Standard/Expert), interactive @tutorial (10-min hands-on learning), quick-start templates (zero-to-productive in 5 min)
+  - **PHASE 3 (Validation):** Build metrics system (track all stats), pattern lifecycle policy (data-driven deprecation), 10-app showcase tracker (public validation framework)
 - **4.4.0** (2026-03-05): **LEARNING & INTELLIGENCE UPGRADE** — 3-tier improvement system from EaseMail lessons:
   - **TIER 1 (Memory System):** BUILD-LOG.md auto-logging with commit gate enforcement, Error Sniffer detects silent error components, Prisma+Supabase config check at session start
   - **TIER 2 (Pattern Library):** SSR-safe imports pattern (fixes "window is not defined"), OAuth token management pattern (prevents cache poisoning, scope conflicts, admin consent errors)
@@ -204,6 +208,163 @@ pnpm dep:map
 
 Log to BUILD-LOG.md: `[Setup] dep:map installed and verified`
 This runs once per project. Never again after that.
+
+---
+
+## Setup: Git Hooks (Technical Enforcement)
+
+**Purpose:** Make CodeBakers protocol technically enforced, not instruction-based.
+
+**Run once per project:**
+```bash
+npx ts-node scripts/install-git-hooks.ts
+```
+
+**What it installs:**
+
+**1. Pre-commit hook** (`.git/hooks/pre-commit`)
+- Runs `scripts/codebakers-verify.ts` before every commit
+- Blocks commit if:
+  - TypeScript has errors (`tsc --noEmit` fails)
+  - .codebakers/ directory missing
+  - BRAIN.md or DEPENDENCY-MAP.md missing
+  - BUILD-LOG.md not updated
+- Exit code 1 = blocks commit
+
+**2. Pre-push hook** (`.git/hooks/pre-push`)
+- Ensures .codebakers/ committed before push
+- Prevents pushing uncommitted memory files
+
+**Bypass (emergency only):**
+```bash
+git commit --no-verify -m "message"
+```
+
+**Uninstall:**
+```bash
+rm .git/hooks/pre-commit
+rm .git/hooks/pre-push
+```
+
+**Why this matters:**
+Before v4.5.0: Protocol was instruction-based (Claude can ignore)
+After v4.5.0: Protocol is technically enforced (git blocks non-compliant commits)
+
+---
+
+## Progressive Disclosure Modes
+
+**Purpose:** Lower learning curve for new users, reveal complexity gradually.
+
+**Three modes:**
+
+### **Beginner Mode** (default for new users)
+- Simplified interface (5 questions max in interview)
+- Auto-applies all patterns (no prompts)
+- Hides complexity (no dep map details, error sniffer internals)
+- Shows only: "Building feature X... ✓ Done"
+- Auto-promotes to Standard after 3 successful builds
+
+### **Standard Mode** (after 3 builds)
+- Shows pattern warnings (but auto-applies by default)
+- Shows atomic unit checklist
+- Basic error sniffer output
+- Dependency map visible
+- Balanced experience
+
+### **Expert Mode** (user opt-in)
+- Full control: pattern overrides, manual dep map, custom domains
+- All diagnostic output
+- Can modify agents/ files
+- No hand-holding
+
+**Change mode:**
+```bash
+@mode beginner
+@mode standard
+@mode expert
+```
+
+**Check current mode:**
+```bash
+cat .codebakers/CONFIG.md
+```
+
+**Mode stored in:** `.codebakers/CONFIG.md`
+
+---
+
+## Metrics & Lifecycle Management
+
+### **Build Metrics**
+
+Track project statistics automatically:
+
+```bash
+@metrics  # or: npx ts-node scripts/generate-build-metrics.ts
+```
+
+**Generates:** `.codebakers/BUILD-METRICS.md`
+
+**Includes:**
+- Features built, time spent
+- Atomic unit gate pass rate
+- Error Sniffer accuracy
+- Crash recoveries
+- Build vs. fix ratio
+- Production bugs (manual tracking)
+
+**Use for:**
+- Progress tracking
+- Framework validation
+- Sharing in SHOWCASE.md
+
+---
+
+### **Pattern Metrics**
+
+Track pattern usage and accuracy:
+
+```bash
+@pattern metrics  # or: npx ts-node scripts/generate-pattern-metrics.ts
+```
+
+**Generates:** `.codebakers/PATTERN-METRICS.md`
+
+**Includes:**
+- Which patterns used (count + last used)
+- Success rate (applied vs. overridden)
+- Unused patterns (deprecation candidates)
+- High-override patterns (need review)
+
+**Use for:**
+- Pattern lifecycle decisions
+- Identifying false positives
+- Cleanup and maintenance
+
+---
+
+### **Pattern Lifecycle**
+
+**Four stages:**
+1. **Experimental** (`agents/patterns/experimental/`) — <5 uses, not proven
+2. **Active** (`agents/patterns/`) — 5-20 uses, >80% success
+3. **Stable** (`agents/patterns/` ⭐) — 20+ uses, >90% success
+4. **Deprecated** (`agents/patterns/archive/`) — Unused 180+ days OR replaced
+
+**Lifecycle commands:**
+```bash
+@pattern promote [name]   # Move to next stage
+@pattern archive [name]   # Deprecate to archive
+@pattern restore [name]   # Restore from archive
+```
+
+**Automatic recommendations:**
+```bash
+pnpm pattern:lifecycle  # Weekly check
+```
+
+**Full policy:** `agents/patterns/_LIFECYCLE.md`
 
 ---
 
@@ -954,6 +1115,12 @@ Commands also work in plain English (e.g., "rebuild this app", "show me the flow
 - `@refs` — process any new files in refs/ folder immediately
 - `@ui` — re-run UI research, update UI-RESEARCH.md, add gaps to fix queue
 - `@expand [task]` — manually trigger prompt expansion on any task without executing
-- `@tutorial` — show complete mutation handler example walkthrough (Delete Account feature)
+- `@tutorial` — interactive 10-minute tutorial (builds todo app, teaches atomic units, dep maps, error sniffer, crash recovery). Auto-runs for new users. Skip: `@skip-tutorial`
 - `@guided [on|off|verbose|minimal|status]` — toggle guided mode (contextual teaching + capability announcements)
 - `@rollback [N]` — safely undo last N features (default: 1). Creates safety branch, uses git revert, regenerates dependency map.
+- `@setup hooks` — install git pre-commit hooks (enforces protocol verification before every commit). Run once per project.
+- `@metrics` — generate build metrics report (.codebakers/BUILD-METRICS.md). Shows: features built, time spent, patterns used, errors caught.
+- `@pattern metrics` — generate pattern usage metrics (.codebakers/PATTERN-METRICS.md). Shows: which patterns used, accuracy rates, deprecation candidates.
+- `@pattern promote [name]` — promote pattern to next lifecycle stage (experimental → active → stable)
+- `@pattern archive [name]` — deprecate pattern to archive (unused patterns)
+- `@mode [beginner|standard|expert]` — change CodeBakers mode. Beginner=simplified, Standard=balanced, Expert=full control.
