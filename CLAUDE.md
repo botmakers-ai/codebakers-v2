@@ -1,12 +1,19 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.5.0
+**Version:** 4.5.1
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
+- **4.5.1** (2026-03-05): **INTEGRATION SETUP MODE** — Test external APIs in sandbox BEFORE building features (inspired by EaseMail workflow):
+  - Integration Setup Agent: Creates isolated sandbox for testing APIs (Microsoft Graph, Stripe, etc.)
+  - Sandbox test scripts: OAuth, endpoints, error handling, rate limits — prove it works first
+  - INTEGRATION-CONFIG.md: Documents working patterns, gotchas, credentials from sandbox tests
+  - Integration finalize: Imports proven patterns to main project (lib/integrations/[name].ts)
+  - Pre-build phases: Design (mockups) → Integration Setup (API testing) → Interview → Build
+  - Matches real-world workflow: test integrations in isolation, then build features using proven patterns
 - **4.5.0** (2026-03-05): **TECHNICAL ENFORCEMENT & VALIDATION** — Solves instruction-based enforcement problem with technical controls:
   - **PHASE 1 (Enforcement):** Git pre-commit hooks (blocks commits if violations), verification scripts (10 automated checks), pattern metrics tracking (usage + accuracy data)
   - **PHASE 2 (Simplification):** Progressive disclosure modes (Beginner/Standard/Expert), interactive @tutorial (10-min hands-on learning), quick-start templates (zero-to-productive in 5 min)
@@ -371,7 +378,30 @@ pnpm pattern:lifecycle  # Weekly check
 ## New Project Flow
 
 ```
+OPTIONAL PRE-BUILD PHASES (do these first if needed)
+
+Phase 0.1: Design Phase (optional)
+  → Drop mockups in refs/design/
+  → Run: @mockups
+  → Extracts: components, entities, interactions, design tokens
+  → Generates: DESIGN-CONTRACT.md
+  → Result: Detailed spec for what to build
+
+Phase 0.2: Integration Setup Phase (optional but recommended for external APIs)
+  → Run: @integration setup [microsoft-graph | stripe | etc.]
+  → Creates sandbox project in sandbox/integrations/[name]/
+  → Test scripts for: auth, key endpoints, error handling
+  → User tests in isolation (prove integration works)
+  → Documents: working patterns, gotchas, rate limits
+  → Run: @integration finalize [name]
+  → Generates: lib/integrations/[name].ts with proven patterns
+  → Generates: INTEGRATION-CONFIG.md with all learnings
+  → Result: Integration proven and ready to use in features
+
+MAIN BUILD FLOW
+
 Interview Agent (only human moment)
+  → Checks for: DESIGN-CONTRACT.md, INTEGRATION-CONFIG.md (if exist, uses them)
   → Extracts: intent, external services, constraints
   → Flow Expander fills every user flow gap automatically
   → Asks human only about genuine product decisions
@@ -1105,6 +1135,8 @@ Commands also work in plain English (e.g., "rebuild this app", "show me the flow
 - `@flows` — show or regenerate FLOWS.md
 - `@memory` — show BRAIN.md summary
 - `@mockups` — analyze design mockups in refs/design/. Extracts components, entities, interactions, design tokens. Generates DESIGN-CONTRACT.md and enhanced build queue with exact specs.
+- `@integration setup [name]` — test external API integration in isolation before building features. Creates sandbox project, generates test scripts, documents working patterns. Templates: microsoft-graph, google-workspace, stripe, twilio, sendgrid, aws-s3, custom-api. Use: `@integration finalize [name]` when ready to import to main project.
+- `@integration finalize [name]` — import tested integration from sandbox to main project. Creates lib/integrations/[name].ts with proven patterns from sandbox tests.
 - `@queue` — show fix queue
 - `@status` — what's done, what's remaining
 - `@team` — show all agents
