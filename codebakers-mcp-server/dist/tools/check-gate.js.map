@@ -1,0 +1,1 @@
+{"version":3,"file":"check-gate.js","sourceRoot":"","sources":["../../src/tools/check-gate.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,KAAK,UAAU,SAAS,CAAC,IAAwB;IACtD,MAAM,KAAK,GAAG,IAAI,CAAC,KAAK,IAAI,CAAC,CAAC;IAC9B,OAAO,wBAAwB,KAAK,gFAAgF,CAAC;AACvH,CAAC"}

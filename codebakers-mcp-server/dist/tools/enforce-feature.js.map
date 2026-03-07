@@ -1,0 +1,1 @@
+{"version":3,"file":"enforce-feature.js","sourceRoot":"","sources":["../../src/tools/enforce-feature.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,KAAK,UAAU,cAAc,CAAC,IAA+B;IAClE,MAAM,WAAW,GAAG,IAAI,CAAC,YAAY,IAAI,SAAS,CAAC;IACnD,OAAO,kCAAkC,WAAW,iEAAiE,CAAC;AACxH,CAAC"}

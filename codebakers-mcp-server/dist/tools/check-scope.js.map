@@ -1,0 +1,1 @@
+{"version":3,"file":"check-scope.js","sourceRoot":"","sources":["../../src/tools/check-scope.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,KAAK,UAAU,UAAU,CAAC,IAAsC;IACrE,MAAM,WAAW,GAAG,IAAI,CAAC,mBAAmB,IAAI,SAAS,CAAC;IAC1D,OAAO,gCAAgC,WAAW,sEAAsE,CAAC;AAC3H,CAAC"}

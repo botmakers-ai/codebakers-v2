@@ -1,0 +1,1 @@
+{"version":3,"file":"generate-spec.js","sourceRoot":"","sources":["../../src/tools/generate-spec.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAEH,MAAM,CAAC,KAAK,UAAU,YAAY,CAAC,IAA8B;IAC/D,MAAM,EAAE,WAAW,EAAE,GAAG,IAAI,CAAC;IAE7B,IAAI,CAAC,WAAW,EAAE,CAAC;QACjB,OAAO;;;;;;2EAMgE,CAAC;IAC1E,CAAC;IAED,uCAAuC;IACvC,6BAA6B;IAE7B,OAAO;;eAEM,WAAW;;;;;;;;;8CASoB,CAAC;AAC/C,CAAC"}
