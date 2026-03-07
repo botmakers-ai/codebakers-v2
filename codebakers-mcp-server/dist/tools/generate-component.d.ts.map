@@ -1,0 +1,1 @@
+{"version":3,"file":"generate-component.d.ts","sourceRoot":"","sources":["../../src/tools/generate-component.ts"],"names":[],"mappings":"AAAA;;;;;;;;;GASG;AAKH,UAAU,aAAa;IACrB,IAAI,EAAE,MAAM,CAAC;IACb,MAAM,EAAE,MAAM,CAAC;IACf,IAAI,EAAE,MAAM,GAAG,QAAQ,GAAG,MAAM,CAAC;CAClC;AAED,wBAAsB,iBAAiB,CAAC,IAAI,EAAE,aAAa,GAAG,OAAO,CAAC,MAAM,CAAC,CA6B5E"}

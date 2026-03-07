@@ -1,0 +1,1 @@
+{"version":3,"file":"execute-atomic-unit.d.ts","sourceRoot":"","sources":["../../src/tools/execute-atomic-unit.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;GAcG;AAWH,UAAU,cAAc;IACtB,YAAY,EAAE,MAAM,CAAC;IACrB,MAAM,EAAE,MAAM,CAAC;IACf,UAAU,CAAC,EAAE,MAAM,EAAE,CAAC;CACvB;AAED,wBAAsB,iBAAiB,CAAC,IAAI,EAAE,cAAc,GAAG,OAAO,CAAC,MAAM,CAAC,CA6F7E"}

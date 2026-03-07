@@ -1,0 +1,1 @@
+{"version":3,"file":"generate-api-route.d.ts","sourceRoot":"","sources":["../../src/tools/generate-api-route.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;GAUG;AAKH,UAAU,SAAS;IACjB,MAAM,EAAE,MAAM,CAAC;IACf,SAAS,EAAE,MAAM,GAAG,KAAK,GAAG,QAAQ,GAAG,QAAQ,GAAG,QAAQ,CAAC;CAC5D;AAED,wBAAsB,gBAAgB,CAAC,IAAI,EAAE,SAAS,GAAG,OAAO,CAAC,MAAM,CAAC,CAwCvE"}
