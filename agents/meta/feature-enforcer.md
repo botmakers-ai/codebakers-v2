@@ -18,6 +18,18 @@
 ```typescript
 const message = user.message.trim()
 
+// Special // commands (help, status, etc.)
+if (message === '//' || message === '//help') {
+  showSlashCommandHelp()
+  return
+}
+
+if (message === '//status') {
+  showProjectStatus()
+  return
+}
+
+// Feature build enforcement
 const isFeatureRequest =
   message.startsWith('@feature ') ||
   message.startsWith('// ')
@@ -26,6 +38,94 @@ if (isFeatureRequest) {
   // ENFORCE full atomic unit workflow
   loadFeatureEnforcer()
 }
+```
+
+---
+
+## Special Commands
+
+### **`//help` or `//` alone**
+
+Shows available `//` commands:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🍞 CodeBakers: // Command Reference
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FEATURE BUILDING (ENFORCED):
+  // [description]        Build feature with full atomic unit protocol
+                          → All 8 steps mandatory
+                          → Error Sniffer + Gate check required
+                          → Production-quality output
+
+UTILITY:
+  //help                  Show this help
+  //status                Show project status (flows, queue, metrics)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EXAMPLES:
+
+  Production features (use //):
+    // user authentication with OAuth
+    // delete account with confirmation
+    // inbox view with infinite scroll
+
+  Quick tasks (use regular messages):
+    add debug logging
+    fix typo in button text
+    update README
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TIP: Use // for production features that need guaranteed quality.
+     Use regular messages for quick fixes and internal tools.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### **`//status`**
+
+Shows current project status:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🍞 CodeBakers: Project Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROJECT: EaseMail
+DOMAIN: Email
+MODE: Standard
+
+FLOWS:
+  ✓ Completed: 18/23 (78%)
+  ⏳ In Progress: 2
+  ⚠️ Blocked: 1
+  ❌ Not Started: 2
+
+FIX QUEUE:
+  🔴 P1: 3 items
+  🟡 P2: 7 items
+  ⚪ P3: 2 items
+
+RECENT ATOMIC UNITS:
+  ✓ inbox-view (gate passed 8/8) - 2 hours ago
+  ✓ send-email (gate passed 8/8) - 1 day ago
+  ⏳ delete-account (step 3/8) - in progress
+
+METRICS:
+  Build vs Fix: 85% build / 15% fix
+  Error Sniffer: 95% accuracy
+  Gate Pass Rate: 100%
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run @flows for detailed flow status
+Run @queue for full fix queue
+Run @metrics for complete build metrics
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
@@ -202,6 +302,65 @@ System:
 🍞 CodeBakers: Feature request detected — full protocol enforced
 
 [Same full workflow as Example 1]
+```
+
+---
+
+### **Example 3: Help Command**
+
+```
+User: //help
+
+System:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🍞 CodeBakers: // Command Reference
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FEATURE BUILDING (ENFORCED):
+  // [description]        Build feature with full atomic unit protocol
+
+UTILITY:
+  //help                  Show this help
+  //status                Show project status
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EXAMPLES:
+  // user authentication with OAuth
+  // delete account with confirmation
+
+TIP: Use // for production features that need guaranteed quality.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+### **Example 4: Just `//` Alone**
+
+```
+User: //
+
+System:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🍞 CodeBakers: // Command Reference
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Did you mean to build a feature?
+
+USAGE:
+  // [feature description]    Build with full enforcement
+
+EXAMPLES:
+  // inbox view with threading
+  // delete account button
+
+OTHER COMMANDS:
+  //help      Show all // commands
+  //status    Project status
+  @help       All CodeBakers commands
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---

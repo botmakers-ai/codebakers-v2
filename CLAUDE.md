@@ -1,12 +1,17 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.5.2
+**Version:** 4.5.3
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
+- **4.5.3** (2026-03-06): **// COMMAND HELP** — Quality of life improvements for // command discovery:
+  - `//help` or `//` alone shows available // commands with examples and usage tips
+  - `//status` shows project status (flows completed, fix queue, recent atomic units, build metrics)
+  - Help output includes clear guidance on when to use // (production features) vs regular messages (quick fixes)
+  - Auto-detects empty // and guides user with command reference
 - **4.5.2** (2026-03-05): **FEATURE ENFORCEMENT TRIGGER** — Explicit signal for full atomic unit protocol:
   - @feature [description] or // [description] triggers MANDATORY full workflow (no shortcuts allowed)
   - Enforces: context loading, error sniffer, atomic unit declaration, all 8 steps, BUILD-LOG.md updates, gate check, atomic commit
@@ -1235,6 +1240,8 @@ Commands also work in plain English (e.g., "rebuild this app", "show me the flow
 
 - `@help` — show all available commands with descriptions
 - `@feature [description]` — **ENFORCE full atomic unit protocol** (no shortcuts). Alternative syntax: `// [description]`. Use when building production features that need full quality. Enforces: context loading, error sniffer, atomic unit declaration, all layers (schema → API → store → UI → tests), BUILD-LOG.md updates, gate check, atomic commit format. Example: `@feature delete account button` or `// inbox view with threading`
+- `//help` or `//` — show available // commands with usage examples and tips. Displays feature building commands and utility commands in formatted reference guide.
+- `//status` — show project status including: flows completed/in-progress/blocked, fix queue priorities, recent atomic units, build metrics summary. Quick snapshot of project health.
 - `@rebuild` — creates a `rebuild/[date]` branch, then runs full autonomous pipeline: dep map → read → reconstruct intent → audit → fix → verify → report. Merge when satisfied. Your working branch is never touched.
 - `@interview` — start project interview (new projects)
 - `@rca` — deep root cause analysis on pasted error. Traces data flow, finds systemic issues, fixes pattern comprehensively. Auto-runs on recurring errors.
