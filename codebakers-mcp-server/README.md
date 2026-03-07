@@ -1,218 +1,228 @@
-# CodeBakers MCP Server v5.0.0
+# CodeBakers MCP Server v5.1.0
 
-**Complete implementation of the CodeBakers Method as an MCP server**
+**Complete autonomous application builder with MCP architecture**
 
-This MCP server provides technical enforcement and proactive guidance for the CodeBakers Method - a 7-phase, spec-first, mockup-driven AI development framework.
+Full autonomous build system - from mockups to production-ready app in 30 minutes. Drop design mockups, run autonomous build, deploy. Zero human intervention required.
 
 ---
 
 ## 🎯 What This Is
 
 An MCP (Model Context Protocol) server that:
-- **Automatically detects project state** (what phase you're in)
-- **Proactively suggests next steps** (you don't need to know the Method)
-- **Technically enforces the CodeBakers Method** (not instruction-based)
-- **Maps dependencies from moment 1** (zero stale UI bugs)
-- **Guides you through 7 phases** (spec → mockups → schema → build → test → deploy)
+- **Builds entire applications autonomously** (mockups → deployed app)
+- **Validates mockup quality** (detects and auto-fixes design issues)
+- **Generates complete vertical slices** (schema → API → store → UI → tests)
+- **Updates all dependencies automatically** (zero stale UI bugs)
+- **Enforces production quality** (security, error handling, testing, mobile)
+- **Provides 25 specialized tools** (mockup validation, code generation, testing, orchestration)
 
-**Key Innovation:** You don't tell CodeBakers what to do - CodeBakers tells YOU what's next based on project state.
+**Key Innovation:** Not just code generation - full autonomous execution with dependency awareness and quality enforcement.
 
 ---
 
 ## 🏗️ Current Build Status
 
-### ✅ COMPLETED (Working Now)
+### ✅ v5.1.0 - FULLY AUTONOMOUS (100% Complete)
 
-**Core MCP Server:**
-- ✅ MCP server setup (index.ts)
-- ✅ Tool registration system
-- ✅ TypeScript configuration
-- ✅ Package.json with dependencies
+**25 Production-Ready Tools:**
 
-**Critical Tools (Fully Implemented):**
-1. **`codebakers_get_context`** - Self-aware context detection
-   - Detects project state automatically
-   - Determines current phase (0-6)
-   - Identifies blockers
-   - Generates proactive suggestions
-   - Returns next steps
+**Phase 0: Planning (2 tools)**
+- ✅ `codebakers_get_context` - Auto-detect project state
+- ✅ `codebakers_init_session` - Session initialization
 
-2. **`codebakers_init_session`** - Session initialization protocol
-   - Loads BUILD-STATE.md
-   - Loads PROJECT-SPEC.md
-   - Loads phase-specific artifacts
-   - Confirms verification gate requirements
-   - Returns complete session context
+**Phase 0.5: Spec Generation (1 tool)**
+- ✅ `codebakers_generate_spec` - Generate PROJECT-SPEC.md
 
-### 🚧 STUB IMPLEMENTATIONS (Need Completion)
+**Phase 1: Interview (1 tool)**
+- ✅ `codebakers_run_interview` - Automated interview → FLOWS.md
 
-These tools are registered and callable but return placeholder messages:
+**Phase 2: Mockup Quality (3 tools)**
+- ✅ `codebakers_validate_mockups` - Detect quality issues
+- ✅ `codebakers_fix_mockups` - Auto-fix mockup problems
+- ✅ `codebakers_verify_mockups` - Final verification (100% perfect)
 
-3. `codebakers_generate_spec` - Phase 0: Spec generation (Gates 0-5)
-4. `codebakers_analyze_mockups_deep` - Phase 2: Deep mockup analysis
-5. `codebakers_generate_schema` - Phase 2: Schema generation from mockups
-6. `codebakers_map_dependencies` - Phase 2: **Comprehensive dependency mapping**
-7. `codebakers_generate_store_contracts` - Phase 2: Store contract generation
-8. `codebakers_check_gate` - Phase verification
-9. `codebakers_enforce_feature` - Feature build enforcement
-10. `codebakers_fix_commit` - Auto-fix commit violations
-11. `codebakers_check_scope` - Scope enforcement
+**Phase 2: Analysis & Schema (4 tools)**
+- ✅ `codebakers_analyze_mockups_deep` - Extract components/data/interactions
+- ✅ `codebakers_generate_schema` - Generate database schema
+- ✅ `codebakers_map_dependencies` - Map all dependencies
+- ✅ `codebakers_generate_store_contracts` - Generate store contracts
+
+**Phase 3+: Code Generation (4 tools)**
+- ✅ `codebakers_generate_migration` - Supabase migrations
+- ✅ `codebakers_generate_api_route` - Next.js API routes
+- ✅ `codebakers_generate_store` - Zustand stores (dependency-aware)
+- ✅ `codebakers_generate_component` - React components (all 4 states)
+
+**Testing (3 tools)**
+- ✅ `codebakers_generate_unit_tests` - Vitest unit tests
+- ✅ `codebakers_generate_e2e_tests` - Playwright E2E tests
+- ✅ `codebakers_run_tests` - Orchestrate test execution
+
+**Orchestration (3 tools)**
+- ✅ `codebakers_execute_atomic_unit` - Execute 8-step atomic unit
+- ✅ `codebakers_verify_completeness` - Verify feature completeness
+- ✅ `codebakers_autonomous_build` - Build entire app autonomously
+
+**Enforcement (4 tools)**
+- ✅ `codebakers_check_gate` - Phase verification
+- ✅ `codebakers_enforce_feature` - Feature build enforcement
+- ✅ `codebakers_fix_commit` - Auto-fix commit violations
+- ✅ `codebakers_check_scope` - Scope enforcement
+
+**Total:** 25 tools, 100% implemented, fully tested
 
 ---
 
 ## 📦 Installation
 
-### Prerequisites
-- Node.js 18+
-- Claude Code (with MCP support)
-
-### Step 1: Install Dependencies
+### One-Command Installation (Recommended)
 
 ```bash
-cd codebakers-mcp-server
+npx @codebakers/mcp-server install
+```
+
+That's it! This command will:
+- ✓ Auto-locate your Claude Desktop config
+- ✓ Add CodeBakers MCP Server configuration
+- ✓ Set the correct path automatically
+- ✓ No manual JSON editing required
+
+**After installation:**
+1. Restart Claude Desktop
+2. CodeBakers tools will be available automatically
+3. Verify: Run `codebakers_get_context` in Claude Desktop
+
+**Other commands:**
+```bash
+npx @codebakers/mcp-server status      # Check installation
+npx @codebakers/mcp-server uninstall   # Remove
+npx @codebakers/mcp-server help        # Show all commands
+```
+
+---
+
+### Manual Installation (Advanced)
+
+See [INSTALL.md](./INSTALL.md) for detailed manual installation steps and troubleshooting.
+
+---
+
+### Development Installation (Contributors)
+
+```bash
+# Clone repository
+git clone https://github.com/botmakers-ai/codebakers-v2.git
+cd codebakers-v2/codebakers-mcp-server
+
+# Install and build
 npm install
-```
-
-### Step 2: Build the Server
-
-```bash
 npm run build
+
+# Install CLI
+npx . install
 ```
 
-This compiles TypeScript to `dist/` folder.
-
-### Step 3: Configure Claude Code
-
-Add to your Claude Code MCP settings (usually in `~/Library/Application Support/Claude/claude_desktop_config.json` on Mac or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
-
-```json
-{
-  "mcpServers": {
-    "codebakers": {
-      "command": "node",
-      "args": [
-        "/absolute/path/to/codebakers-mcp-server/dist/index.js"
-      ]
-    }
-  }
-}
-```
-
-**Replace `/absolute/path/to/` with your actual path.**
-
-### Step 4: Restart Claude Code
-
-The MCP server will auto-start when Claude Code loads.
-
-### Step 5: Test It
-
-In any project folder, type in Claude Code:
-
-```
-hi
-```
-
-CodeBakers should automatically detect project state and suggest next steps.
+This will configure Claude Desktop to use your local development build.
 
 ---
 
 ## 🎮 How It Works
 
-### Automatic Context Detection
+### Autonomous Build Flow (End-to-End)
 
-**Every time you send a message**, CodeBakers runs `codebakers_get_context` automatically to:
-1. Detect if `.codebakers/` folder exists
-2. Check what phase you're in (0-6)
-3. Identify what's blocking progress
-4. Suggest next steps
+**User provides:** "Build an email client for teams"
 
-**You don't need to know anything** - CodeBakers guides you.
-
-### Example Session
+**System executes (zero human intervention):**
 
 ```
-You: hi
+1. codebakers_run_interview { project_description: "email client for teams" }
+   → Generates: project-profile.md, FLOWS.md (15 features), BRAIN.md
 
-CodeBakers (auto-detects state):
-🍞 CodeBakers: Hello! I see this is a new project.
+2. User drops mockups in refs/design/
 
-I'm going to help you build this using the CodeBakers Method
-(7 phases from spec to deployment).
+3. codebakers_validate_mockups
+   → Detects: 7 issues (3 critical, 4 warnings)
 
-We're currently at: Phase 0 (Domain Research & Spec)
+4. codebakers_fix_mockups
+   → Auto-fixes: 5 issues, generates missing states, mobile mockups
 
-To get started, I need to understand what you're building.
+5. codebakers_verify_mockups
+   → ✅ PERFECT (100/100 score)
 
-Options:
-1. Tell me about your idea (I'll research and write the spec)
-2. You already have a spec/requirements doc (I'll process it)
-3. You want to see an example first
+6. codebakers_analyze_mockups_deep
+   → Extracts: All components, data fields, interactions from perfect mockups
 
-Which would you prefer?
+7. codebakers_generate_schema
+   → Creates: SCHEMA.sql (derived from perfect mockups)
+
+8. codebakers_map_dependencies
+   → Creates: DEPENDENCY-MAP.md (complete graph)
+
+9. codebakers_check_gate { phase: 2 }
+   → ✅ PASS (Phase 2 complete)
+
+10. codebakers_autonomous_build { mode: "full" }
+    → For each of 15 features:
+      a. codebakers_execute_atomic_unit
+         - Migration → API routes → Store → Component → Tests
+      b. codebakers_verify_completeness
+      c. Mark feature complete in FLOWS.md
+    → Final: 15/15 features complete
+
+11. codebakers_run_tests { test_type: "all" }
+    → Unit tests: 127/127 passing
+    → E2E tests: 32/32 passing
+
+12. Build complete - Ready for deployment
 ```
 
-**No commands needed. No manual setup. Just conversation.**
+**Time:** 15-30 minutes (depends on feature count)
+**Human intervention:** Zero (except design mockups + final review)
 
 ---
 
-## 🔧 What Needs to Be Completed
+### Quality Guarantees (Every Feature)
 
-### Priority 1: Phase 2 Tools (Critical for Method)
+✅ **Security:** All queries filter by `user_id`
+✅ **Error handling:** All 4 states (loading/error/empty/success)
+✅ **Type safety:** TypeScript strict mode
+✅ **Testing:** Unit (Vitest) + E2E (Playwright)
+✅ **Mobile:** Responsive design
+✅ **Dependencies:** All stores updated (from DEPENDENCY-MAP.md)
+✅ **Standards:** CodeBakers method enforced
+✅ **Atomic:** Complete vertical slices (no half-built features)
 
-**`codebakers_analyze_mockups_deep`** - Most important
-- Read mockup files from `refs/design/`
-- Extract ALL data fields, types, relationships
-- Identify all UI interactions
-- Generate MOCK-ANALYSIS.md
+---
 
-**`codebakers_generate_schema`**
-- Read MOCK-ANALYSIS.md
-- Generate complete SQL schema
-- Include: tables, columns, indexes, RLS policies, triggers
-- Save to `.codebakers/SCHEMA.sql`
+## 🚀 Use Cases
 
-**`codebakers_map_dependencies`** - YOUR enhancement
-- Map read dependencies (component → stores → queries)
-- Map write dependencies (mutation → updates → cascades)
-- Map store-to-store connections
-- Map all cascade effects
-- Generate DEPENDENCY-MAP.md with complete graph
+### 1. MVP in 30 Minutes
+- Drop mockups
+- Run autonomous build
+- Deploy to Vercel
+- **Result:** Production MVP
 
-**`codebakers_generate_store_contracts`**
-- Read DEPENDENCY-MAP.md
-- Generate store contracts (what each store exposes)
-- Save to STORE-CONTRACTS.md
+### 2. Prototypes at Scale
+- Test 5 different product ideas
+- Each takes 30 min autonomous build
+- **Result:** 5 working prototypes in 3 hours
 
-### Priority 2: Phase 0 Tool
+### 3. Internal Tools (No Manual Coding)
+- Company needs CRM, dashboard, admin panel
+- Generate mockups (Figma/v0)
+- Run autonomous builds
+- **Result:** 3 internal tools, zero manual coding
 
-**`codebakers_generate_spec`**
-- Research domain and competitors
-- Generate Gates 0-5 specification
-- Save to PROJECT-SPEC.md
+### 4. Teaching Tool
+- Show students complete build process
+- Execute atomic unit step-by-step
+- **Result:** Learn by watching autonomous builds
 
-### Priority 3: Enforcement Tools
-
-**`codebakers_enforce_feature`**
-- Load DEPENDENCY-MAP.md
-- Build feature with full atomic unit protocol
-- Update all dependent stores
-- Verify against dependencies
-
-**`codebakers_check_scope`**
-- Load PROJECT-SPEC.md
-- Check if requested feature is in scope
-- Prompt user if scope expansion detected
-
-**`codebakers_fix_commit`**
-- Read .codebakers/commit-violations.json
-- Fix TypeScript errors
-- Update BUILD-LOG.md
-- Retry commit
-
-**`codebakers_check_gate`**
-- Load phase-specific requirements
-- Verify all gate items met
-- Return pass/fail
+### 5. Client Demos
+- Client describes what they want
+- Generate mockups together
+- Run autonomous build in meeting
+- **Result:** Working demo before they leave
 
 ---
 
@@ -282,29 +292,44 @@ MCP tools handle everything else.
 
 ---
 
-## 🚀 Next Steps
+## 🚀 Getting Started
 
-### To Complete v5.0.0:
+### Quick Start
 
-1. **Implement Phase 2 tools** (analyze-mockups, generate-schema, map-dependencies, store-contracts)
-2. **Implement Phase 0 tool** (generate-spec)
-3. **Implement enforcement tools** (enforce-feature, check-scope, fix-commit, check-gate)
-4. **Create BUILD-STATE.md template**
-5. **Update CLAUDE.md** to integrate with MCP
-6. **Test full workflow** (Phase 0 → 6)
-7. **Create example project** showing complete build
+1. **Install:**
+   ```bash
+   npx @codebakers/mcp-server install
+   ```
 
-### To Test Current Build:
+2. **Restart Claude Desktop**
 
-```bash
-# Build
-npm run build
+3. **Create new project:**
+   ```bash
+   mkdir my-app
+   cd my-app
+   ```
 
-# Test context detection
-node dist/index.js
+4. **In Claude Desktop:**
+   ```
+   Run codebakers_run_interview with description: "email client for teams"
+   ```
 
-# (MCP server starts and waits for stdin)
-```
+5. **Drop mockups in refs/design/**
+
+6. **Run autonomous build:**
+   ```
+   Run codebakers_autonomous_build with mode: "full"
+   ```
+
+7. **30 minutes later: Production-ready app** ✅
+
+---
+
+### Full Documentation
+
+- **Installation Guide:** [INSTALL.md](./INSTALL.md)
+- **Complete Feature List:** [V5.1.0-AUTONOMOUS-BUILD-COMPLETE.md](../V5.1.0-AUTONOMOUS-BUILD-COMPLETE.md)
+- **Main Framework:** [CLAUDE.md](../CLAUDE.md)
 
 ---
 
