@@ -1,12 +1,19 @@
 # 🍞 CodeBakers V4
 
-**Version:** 4.5.1
+**Version:** 4.5.2
 
 > Drop this file into any project. Open Claude Code. The system takes over.
 
 **Raw Base URL:** `https://raw.githubusercontent.com/botmakers-ai/codebakers-v2/main/`
 
 **Changelog:**
+- **4.5.2** (2026-03-05): **FEATURE ENFORCEMENT TRIGGER** — Explicit signal for full atomic unit protocol:
+  - @feature [description] or // [description] triggers MANDATORY full workflow (no shortcuts allowed)
+  - Enforces: context loading, error sniffer, atomic unit declaration, all 8 steps, BUILD-LOG.md updates, gate check, atomic commit
+  - Clear user intent: @feature = "use full system" vs regular message = "lighter protocol OK"
+  - Teaching tool: Shows complete workflow even in Beginner mode when triggered
+  - Quality gate: Features built with @feature guaranteed complete (all requirements met)
+  - Use for: production features, critical builds, teaching moments. Skip for: quick fixes, docs, refactoring
 - **4.5.1** (2026-03-05): **INTEGRATION SETUP MODE** — Test external APIs in sandbox BEFORE building features (inspired by EaseMail workflow):
   - Integration Setup Agent: Creates isolated sandbox for testing APIs (Microsoft Graph, Stripe, etc.)
   - Sandbox test scripts: OAuth, endpoints, error handling, rate limits — prove it works first
@@ -816,6 +823,107 @@ project-profile.md:
 
 ---
 
+## Feature Building: Enforcement Levels
+
+**CodeBakers supports two request types with different enforcement levels:**
+
+### **Level 1: Enforced Full Protocol** (`@feature` or `//`)
+
+**Trigger:**
+```
+@feature delete account button
+// inbox view with threading
+```
+
+**What happens:**
+- ✅ **MANDATORY** context loading (BRAIN.md, dep map, error log)
+- ✅ **MANDATORY** Error Sniffer scan (all patterns checked)
+- ✅ **MANDATORY** atomic unit declaration (in FIX-QUEUE.md before code)
+- ✅ **MANDATORY** UNIT-PROGRESS.md creation (crash recovery)
+- ✅ **MANDATORY** all 8 steps (schema → API → store → UI → states → tests → gate)
+- ✅ **MANDATORY** BUILD-LOG.md update after every step
+- ✅ **MANDATORY** gate check (all items must pass)
+- ✅ **MANDATORY** atomic commit format: `feat(atomic): [name] — gate passed [N/N checks]`
+- ❌ **NO shortcuts** allowed (even in Beginner mode)
+
+**Use when:**
+- Building new production feature
+- Critical functionality (can't afford bugs)
+- Teaching new team member (show full workflow)
+- Want guaranteed quality
+- Need crash recovery capability
+
+**Result:** Feature is guaranteed complete, tested, and atomic.
+
+---
+
+### **Level 2: Adaptive Protocol** (Regular messages)
+
+**Trigger:**
+```
+"add delete account button"
+"fix the inbox error"
+"update styling on login page"
+```
+
+**What happens:**
+- ✓ Reads context (BRAIN.md, dep map, error log)
+- ✓ Expands task with full context
+- ✓ Runs Error Sniffer
+- ✓ Loads relevant patterns
+- ⚠️ **May adapt** based on mode (Beginner/Standard/Expert)
+- ⚠️ **May allow** lighter protocol for simple tasks
+
+**Use when:**
+- Quick bug fix
+- Documentation update
+- Styling change
+- Refactoring
+- Exploratory work
+- Non-feature tasks
+
+**Result:** Task completed with appropriate level of rigor.
+
+---
+
+### **Decision Tree: Which to Use?**
+
+```
+Is this a new feature for end users?
+  └─ YES → Use @feature (full enforcement)
+  └─ NO  → Is it production-critical?
+      └─ YES → Use @feature (full enforcement)
+      └─ NO  → Regular message (adaptive)
+
+Examples:
+  ✅ @feature user authentication
+  ✅ @feature payment processing
+  ✅ // email inbox with threading
+  ✅ // search with filters
+
+  ⚠️ "fix typo in button text" (regular message)
+  ⚠️ "update README" (regular message)
+  ⚠️ "refactor this function" (regular message)
+```
+
+---
+
+### **Comparison**
+
+| Aspect | @feature or // | Regular Message |
+|--------|----------------|-----------------|
+| **Context Loading** | Mandatory | Mandatory |
+| **Error Sniffer** | Mandatory (all patterns) | Runs but may skip |
+| **Atomic Unit** | Required before code | May skip for simple tasks |
+| **All 8 Steps** | Mandatory | May adapt |
+| **BUILD-LOG.md** | Every step | May batch |
+| **Gate Check** | All items must pass | May skip for non-features |
+| **Commit Format** | feat(atomic): required | Flexible |
+| **Shortcuts** | Not allowed | May be allowed |
+| **Best For** | Production features | Quick fixes, docs, refactoring |
+
+---
+
 ## Manual Tasks Go Through the System
 
 **Even ad-hoc requests follow the full CodeBakers protocol.**
@@ -1126,6 +1234,7 @@ The only output of this system is working, verified, production-ready software.
 Commands also work in plain English (e.g., "rebuild this app", "show me the flows").
 
 - `@help` — show all available commands with descriptions
+- `@feature [description]` — **ENFORCE full atomic unit protocol** (no shortcuts). Alternative syntax: `// [description]`. Use when building production features that need full quality. Enforces: context loading, error sniffer, atomic unit declaration, all layers (schema → API → store → UI → tests), BUILD-LOG.md updates, gate check, atomic commit format. Example: `@feature delete account button` or `// inbox view with threading`
 - `@rebuild` — creates a `rebuild/[date]` branch, then runs full autonomous pipeline: dep map → read → reconstruct intent → audit → fix → verify → report. Merge when satisfied. Your working branch is never touched.
 - `@interview` — start project interview (new projects)
 - `@rca` — deep root cause analysis on pasted error. Traces data flow, finds systemic issues, fixes pattern comprehensively. Auto-runs on recurring errors.
