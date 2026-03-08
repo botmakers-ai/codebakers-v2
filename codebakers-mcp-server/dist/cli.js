@@ -119,8 +119,8 @@ async function install() {
             }
         }
         config.mcpServers.codebakers = {
-            command: 'node',
-            args: [serverPath]
+            command: 'npx',
+            args: ['-y', '@codebakers/mcp']
         };
         // 5. Write updated config
         await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
