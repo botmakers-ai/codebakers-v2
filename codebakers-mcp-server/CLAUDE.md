@@ -1,6 +1,6 @@
 # 🍞 CodeBakers V5
 
-**Version:** 5.6.0
+**Version:** 5.6.1
 
 > MCP-powered. Self-aware. Complete CodeBakers Method implementation.
 
@@ -120,12 +120,11 @@ Which option?
 🍞 CodeBakers: PROJECT-SPEC.md complete ✓
 
 Phase: 1 (UI Mockups)
-Next: Design mockups or upload to refs/design/
+Next: Upload your mockups to refs/design/
 
 Options:
-1. Generate mockups with AI
-2. I have mockups (I'll upload them)
-3. Review spec first
+1. I have mockups (I'll upload them)
+2. Review spec first
 
 Ready?
 ```
@@ -286,8 +285,9 @@ Ready to design mockups? [Yes/Review spec first]
 
 User: yes
 
-You: [Start Phase 1 - generate mockups]
-     [Or guide user to upload mockups]
+You: [Guide user to upload mockups to refs/design/]
+     [User uploads their designs]
+     [Run codebakers_validate_mockups when ready]
 
 And so on...
 ```
@@ -318,6 +318,6 @@ Use MCP tools to enforce quality.
 
 ---
 
-**Version:** 5.0.0
+**Version:** 5.6.1
 **Built:** March 2026
 **Framework:** CodeBakers Method + MCP Technical Enforcement
