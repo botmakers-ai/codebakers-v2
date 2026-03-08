@@ -1,7 +1,7 @@
 /**
  * codebakers_run_interview
  *
- * Automated Interview Agent (Phase 1)
+ * Optional Interview Tool (runs before or during mockup creation)
  *
  * Automates project interview to generate:
  * - project-profile.md (intent, external services, constraints)
@@ -15,7 +15,9 @@
  * - refs/api/ (API docs)
  * - INTEGRATION-CONFIG.md (if integrations tested)
  *
- * Output: Complete Phase 1 artifacts ready for Phase 2
+ * Purpose: Gather user context to inform better mockup design decisions
+ * When to use: After spec generation, before creating mockups
+ * Output: Project artifacts that help inform Phase 1 (mockup design)
  */
 export declare function runInterview(args: {
     project_description?: string;

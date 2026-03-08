@@ -1,7 +1,7 @@
 /**
  * codebakers_run_interview
  *
- * Automated Interview Agent (Phase 1)
+ * Optional Interview Tool (runs before or during mockup creation)
  *
  * Automates project interview to generate:
  * - project-profile.md (intent, external services, constraints)
@@ -15,7 +15,9 @@
  * - refs/api/ (API docs)
  * - INTEGRATION-CONFIG.md (if integrations tested)
  *
- * Output: Complete Phase 1 artifacts ready for Phase 2
+ * Purpose: Gather user context to inform better mockup design decisions
+ * When to use: After spec generation, before creating mockups
+ * Output: Project artifacts that help inform Phase 1 (mockup design)
  */
 
 import * as fs from 'fs/promises';
@@ -56,7 +58,7 @@ export async function runInterview(args: { project_description?: string }): Prom
   const cwd = process.cwd();
   const description = args.project_description || '';
 
-  console.error('🍞 CodeBakers: Automated Interview (Phase 1)');
+  console.error('🍞 CodeBakers: Automated Interview (Optional)');
 
   try {
     // Gather context from refs/
@@ -336,11 +338,11 @@ Core entities: ${result.core_entities.join(', ')}
 - Frontend: ${result.tech_stack.frontend}
 - Auth: ${result.tech_stack.auth}
 
-## Current Phase
+## Interview Complete
 
-**Phase:** 1 (Interview complete)
+**Status:** Interview complete - ready for mockup creation (Phase 1)
 
-**Next:** Phase 2 (Deep Analysis)
+**Next:** Create mockups, then proceed to Phase 2 (Deep Analysis)
 
 Recommended next steps:
 1. codebakers_validate_mockups (if mockups provided)
@@ -427,13 +429,13 @@ function generateInterviewReport(result: InterviewResult): string {
   }
 
   report += `## Next Steps\n\n`;
-  report += `**Phase 1 complete** → Moving to Phase 2 (Deep Analysis)\n\n`;
-  report += `Recommended sequence:\n`;
-  report += `1. **codebakers_validate_mockups** (if mockups in refs/design/)\n`;
+  report += `**Interview complete** → Now create mockups for Phase 1, then proceed to Phase 2 (Deep Analysis)\n\n`;
+  report += `After creating mockups in refs/design/, recommended sequence:\n`;
+  report += `1. **codebakers_validate_mockups** (check mockup quality)\n`;
   report += `2. **codebakers_fix_mockups** (auto-fix quality issues)\n`;
   report += `3. **codebakers_verify_mockups** (100% quality check)\n`;
-  report += `4. **codebakers_analyze_mockups** (extract data from perfect mockups)\n`;
-  report += `5. **codebakers_generate_schema** (database from mockups)\n`;
+  report += `4. **codebakers_analyze_mockups** (extract data from mockups)\n`;
+  report += `5. **codebakers_generate_schema** (database from mockup analysis)\n`;
   report += `6. **codebakers_map_dependencies** (dependency graph)\n`;
   report += `7. **codebakers_check_gate { phase: 2 }** (verify Phase 2 complete)\n\n`;
 

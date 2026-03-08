@@ -75,9 +75,9 @@ I'll research your domain and generate a detailed PROJECT-SPEC.md with:
 
 **Step 3: Design mockups** 🎨
 You can either:
-- Upload designs from Figma
-- Have me generate mockups
-- Draw them and I'll analyze
+- Upload designs from Figma or other design tools
+- Draw them by hand and take photos
+- Create wireframes and upload them
 
 **Step 4: I build everything automatically** 🚀
 I'll generate:
@@ -126,11 +126,11 @@ Great news - your spec is all done! I've mapped out all the features and know ex
 
 **Three easy options:**
 
-🎨 **Upload designs** - Got Figma mockups? Just drag them into the \`refs/design/\` folder
+🎨 **Upload designs** - Got Figma mockups or wireframes? Just drag them into the \`refs/design/\` folder
 
-✨ **Let me generate them** - Tell me what screens you're thinking, and I'll create mockups for you
+📱 **Use screenshots** - Already have a similar app in mind? Screenshot it as reference and upload
 
-📝 **Sketch it out** - Even hand-drawn sketches work! Take a photo and I'll understand it
+📝 **Sketch it out** - Even hand-drawn sketches work! Take a photo and upload it
 
 ---
 

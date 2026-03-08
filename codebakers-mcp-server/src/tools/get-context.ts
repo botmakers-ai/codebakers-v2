@@ -192,7 +192,7 @@ async function determineNextSteps(phase: any, state: any): Promise<NextStep[]> {
     case 'PHASE_1_MOCKUPS':
       if (!state.hasMockups) {
         steps.push({
-          description: 'Generate UI mockups or upload existing mockups to refs/design/',
+          description: 'Upload your mockups to refs/design/ (screenshots, wireframes, or Figma exports)',
           estimated_time: '15-30 minutes',
         });
       } else {
@@ -272,8 +272,8 @@ async function detectBlockers(state: any): Promise<Blocker[]> {
       type: 'BLOCKED',
       description: 'Phase 1 (Mockups) in progress but no mockups found in refs/design/',
       solutions: [
-        'Generate mockups with AI',
-        'Upload your own mockups to refs/design/',
+        'Upload your mockups to refs/design/ (screenshots, wireframes, Figma exports, or hand-drawn sketches)',
+        'Create mockups in your design tool, then upload them',
         'Skip mockups (not recommended - violates Method principle P2)',
       ],
     });
