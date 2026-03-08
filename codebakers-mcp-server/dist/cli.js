@@ -27,8 +27,11 @@ async function main() {
         case 'status':
             await showStatus();
             break;
+        case 'init':
+            await init();
+            break;
         case 'version':
-            console.log('CodeBakers MCP Server v5.1.0');
+            console.log('CodeBakers MCP Server v5.5.1');
             break;
         default:
             console.error(`Unknown command: ${command}`);
@@ -41,29 +44,32 @@ function showHelp() {
 🍞 CodeBakers MCP Server CLI
 
 USAGE:
-  npx @codebakers/mcp-server <command>
+  npx @codebakers/mcp <command>
 
 COMMANDS:
-  install      Install CodeBakers MCP Server to Claude Desktop
+  install      Install CodeBakers MCP Server to Claude Desktop (one-time setup)
+  init         Copy CLAUDE.md to current directory (run in each project)
   uninstall    Remove CodeBakers MCP Server from Claude Desktop
   status       Check current installation status
   version      Show version
   help         Show this help
 
 EXAMPLES:
-  npx @codebakers/mcp-server install
-  npx @codebakers/mcp-server status
+  npx @codebakers/mcp install      # One-time: Configure Claude Desktop
+  npx @codebakers/mcp init         # Per-project: Enable CodeBakers experience
+  npx @codebakers/mcp status       # Check installation
 
-WHAT IT DOES:
-  - Locates Claude Desktop config file
-  - Adds CodeBakers MCP Server configuration
-  - Provides path to MCP server executable
-  - No manual JSON editing required
+QUICK START:
+  1. npx @codebakers/mcp install   (configure Claude Desktop)
+  2. Restart Claude Desktop
+  3. cd your-project
+  4. npx @codebakers/mcp init      (enable CodeBakers in this project)
+  5. Open project in Claude Desktop and start chatting!
 
-AFTER INSTALLATION:
-  1. Restart Claude Desktop
-  2. CodeBakers tools will appear automatically
-  3. Run: codebakers_get_context to verify
+WHAT EACH COMMAND DOES:
+  install  - Configures Claude Desktop to use CodeBakers MCP tools
+  init     - Copies CLAUDE.md to your project for the full conversational experience
+  status   - Shows if CodeBakers is installed and configured
 `);
 }
 async function install() {
@@ -185,6 +191,67 @@ async function showStatus() {
     }
     catch (error) {
         console.error('❌ Status check failed:', error instanceof Error ? error.message : String(error));
+    }
+}
+async function init() {
+    console.log('🍞 CodeBakers - Project Initialization\n');
+    try {
+        const cwd = process.cwd();
+        const targetPath = path.join(cwd, 'CLAUDE.md');
+        // Check if CLAUDE.md already exists
+        try {
+            await fs.access(targetPath);
+            console.log('⚠️  CLAUDE.md already exists in this directory\n');
+            // Ask if they want to overwrite
+            const readline = await import('readline');
+            const rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+            const answer = await new Promise((resolve) => {
+                rl.question('Overwrite? (y/N) ', (answer) => {
+                    rl.close();
+                    resolve(answer.toLowerCase());
+                });
+            });
+            if (answer !== 'y' && answer !== 'yes') {
+                console.log('Initialization cancelled.');
+                return;
+            }
+        }
+        catch {
+            // File doesn't exist, continue
+        }
+        // Get the source CLAUDE.md from the NPM package
+        // When installed via NPM, __dirname is the dist folder
+        // CLAUDE.md is in the package root (one level up from dist)
+        const sourcePath = path.join(__dirname, '..', 'CLAUDE.md');
+        // Check if source exists
+        try {
+            await fs.access(sourcePath);
+        }
+        catch {
+            console.error('❌ CLAUDE.md not found in package\n');
+            console.error('This might be an older version of @codebakers/mcp');
+            console.error('Try: npm install -g @codebakers/mcp@latest');
+            process.exit(1);
+        }
+        // Copy CLAUDE.md
+        await fs.copyFile(sourcePath, targetPath);
+        console.log('✅ CLAUDE.md copied to current directory\n');
+        console.log('📁 Location:', targetPath);
+        console.log('\n✨ Your project is now CodeBakers-enabled!\n');
+        console.log('NEXT STEPS:');
+        console.log('  1. Open this folder in Claude Desktop');
+        console.log('  2. Go to the Chat tab');
+        console.log('  3. Type "hi" or just press Enter');
+        console.log('  4. You\'ll see the CodeBakers welcome message!\n');
+        console.log('💡 TIP: Claude Desktop will now use CodeBakers conversational');
+        console.log('   style when working in this directory.\n');
+    }
+    catch (error) {
+        console.error('❌ Initialization failed:', error instanceof Error ? error.message : String(error));
+        process.exit(1);
     }
 }
 async function findClaudeDesktopConfig() {
