@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CodeBakers MCP Server v5.3.0
+ * CodeBakers MCP Server v5.4.0
  *
  * Complete implementation of the CodeBakers Method:
  * - 7-phase development workflow
@@ -8,6 +8,7 @@
  * - Self-aware proactive guidance
  * - Technical enforcement via MCP
  * - OAuth integration (GitHub, Supabase, Vercel)
+ * - Context-aware consulting
  */
 export {};
 //# sourceMappingURL=index.d.ts.map

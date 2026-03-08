@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CodeBakers MCP Server v5.3.0
+ * CodeBakers MCP Server v5.4.0
  *
  * Complete implementation of the CodeBakers Method:
  * - 7-phase development workflow
@@ -8,6 +8,7 @@
  * - Self-aware proactive guidance
  * - Technical enforcement via MCP
  * - OAuth integration (GitHub, Supabase, Vercel)
+ * - Context-aware consulting
  */
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -51,9 +52,11 @@ import { generateChatbot } from './tools/generate-chatbot.js';
 import { setupGitHub } from './tools/setup-github.js';
 import { setupSupabase } from './tools/setup-supabase.js';
 import { setupVercel } from './tools/setup-vercel.js';
+// v5.4.0 New Tools - Context-Aware Consulting
+import { consult } from './tools/consult.js';
 const server = new Server({
     name: 'codebakers',
-    version: '5.3.0',
+    version: '5.4.0',
 }, {
     capabilities: {
         tools: {},
@@ -113,6 +116,8 @@ const tools = {
     codebakers_setup_github: setupGitHub,
     codebakers_setup_supabase: setupSupabase,
     codebakers_setup_vercel: setupVercel,
+    // v5.4.0: Context-Aware Consulting
+    codebakers_consult: consult,
 };
 /**
  * List available tools
@@ -526,6 +531,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     },
                 },
             },
+            // v5.4.0: Context-Aware Consulting
+            {
+                name: 'codebakers_consult',
+                description: 'Context-aware consulting & guidance - provides intelligent answers based on project state, architecture decisions, dependencies, errors, and tech stack',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        question: { type: 'string', description: 'Your question (e.g., "How should I handle user permissions?")' },
+                        include_code_examples: { type: 'boolean', description: 'Include code examples in answer (default: true)' },
+                        focus_area: { type: 'string', enum: ['architecture', 'security', 'performance', 'ui', 'data', 'testing', 'deployment'], description: 'Optional focus area' },
+                    },
+                    required: ['question'],
+                },
+            },
         ],
     };
 });
@@ -568,7 +587,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('🍞 CodeBakers MCP Server v5.3.0 started');
+    console.error('🍞 CodeBakers MCP Server v5.4.0 started');
 }
 main().catch((error) => {
     console.error('Fatal error:', error);
