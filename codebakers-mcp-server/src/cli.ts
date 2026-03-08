@@ -145,7 +145,7 @@ async function install() {
 
     config.mcpServers.codebakers = {
       command: 'npx',
-      args: ['-y', '@codebakers/mcp@latest']
+      args: ['-y', '-p', '@codebakers/mcp@latest', 'codebakers-mcp-server']
     };
 
     // 5. Write updated config
