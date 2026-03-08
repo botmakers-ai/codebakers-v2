@@ -30,7 +30,7 @@ import { enforceFeature } from './tools/enforce-feature.js';
 import { fixCommit } from './tools/fix-commit.js';
 import { checkScope } from './tools/check-scope.js';
 
-// v5.1.0 New Tools
+// v5.1.0 Tools
 import { validateMockups } from './tools/validate-mockups.js';
 import { fixMockups } from './tools/fix-mockups.js';
 import { verifyMockups } from './tools/verify-mockups.js';
@@ -46,10 +46,19 @@ import { executeAtomicUnit } from './tools/execute-atomic-unit.js';
 import { verifyCompleteness } from './tools/verify-completeness.js';
 import { autonomousBuild } from './tools/autonomous-build.js';
 
+// v5.2.0 New Tools - Quality Gates & Production
+import { validateAccessibility } from './tools/validate-accessibility.js';
+import { optimizePerformance } from './tools/optimize-performance.js';
+import { scanSecurity } from './tools/scan-security.js';
+import { deployVercel } from './tools/deploy-vercel.js';
+import { diagnoseError } from './tools/diagnose-error.js';
+import { generateDocs } from './tools/generate-docs.js';
+import { generateChatbot } from './tools/generate-chatbot.js';
+
 const server = new Server(
   {
     name: 'codebakers',
-    version: '5.1.0',
+    version: '5.2.0',
   },
   {
     capabilities: {
@@ -109,6 +118,17 @@ const tools = {
   // Enforcement
   codebakers_fix_commit: fixCommit,
   codebakers_check_scope: checkScope,
+
+  // v5.2.0: Quality Gates
+  codebakers_validate_accessibility: validateAccessibility,
+  codebakers_optimize_performance: optimizePerformance,
+  codebakers_scan_security: scanSecurity,
+  codebakers_deploy_vercel: deployVercel,
+  codebakers_diagnose_error: diagnoseError,
+
+  // v5.2.0: Production Features
+  codebakers_generate_docs: generateDocs,
+  codebakers_generate_chatbot: generateChatbot,
 };
 
 /**
@@ -388,14 +408,97 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'codebakers_autonomous_build',
-        description: 'Build entire application autonomously from FLOWS.md',
+        description: 'Build entire application autonomously from FLOWS.md with automatic quality gates',
         inputSchema: {
           type: 'object',
           properties: {
             mode: { type: 'string', enum: ['full', 'remaining'], description: 'Build mode' },
             stop_on_error: { type: 'boolean', description: 'Stop on first error (default: false)' },
+            skip_quality_gates: { type: 'boolean', description: 'Skip quality gates (default: false)' },
+            skip_deploy: { type: 'boolean', description: 'Skip deployment (default: false)' },
+            skip_docs: { type: 'boolean', description: 'Skip documentation (default: false)' },
+            skip_chatbot: { type: 'boolean', description: 'Skip AI chatbot (default: false)' },
           },
           required: ['mode'],
+        },
+      },
+      // v5.2.0: Quality Gates
+      {
+        name: 'codebakers_validate_accessibility',
+        description: 'Validate WCAG accessibility compliance - detects missing ARIA labels, low contrast, etc.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            threshold: { type: 'number', description: 'Minimum score 0-100 (default: 90)' },
+          },
+        },
+      },
+      {
+        name: 'codebakers_optimize_performance',
+        description: 'Optimize performance - bundle size, images, code splitting, lazy loading',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            auto_fix: { type: 'boolean', description: 'Auto-apply optimizations (default: true)' },
+          },
+        },
+      },
+      {
+        name: 'codebakers_scan_security',
+        description: 'Scan for security vulnerabilities - dependencies, XSS, SQL injection, secrets',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            block_on_critical: { type: 'boolean', description: 'Block on critical issues (default: true)' },
+          },
+        },
+      },
+      {
+        name: 'codebakers_deploy_vercel',
+        description: 'Deploy to Vercel - configures project, sets env vars, deploys to production',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            production: { type: 'boolean', description: 'Deploy to production (default: true)' },
+            env_file: { type: 'string', description: 'Path to .env file (default: .env)' },
+          },
+        },
+      },
+      {
+        name: 'codebakers_diagnose_error',
+        description: 'AI-powered error diagnosis - analyzes errors, provides root cause and fix approaches',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            error_message: { type: 'string', description: 'Error message to diagnose' },
+            stack_trace: { type: 'string', description: 'Stack trace (optional)' },
+            context: { type: 'string', description: 'Additional context (optional)' },
+          },
+          required: ['error_message'],
+        },
+      },
+      {
+        name: 'codebakers_generate_docs',
+        description: 'Generate beautiful HTML documentation - quick start, setup, API reference, components',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            include_api: { type: 'boolean', description: 'Include API reference (default: true)' },
+            include_components: { type: 'boolean', description: 'Include components (default: true)' },
+            output_dir: { type: 'string', description: 'Output directory (default: docs/)' },
+          },
+        },
+      },
+      {
+        name: 'codebakers_generate_chatbot',
+        description: 'Generate AI chatbot that knows entire codebase - helps users in-app',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            position: { type: 'string', enum: ['bottom-right', 'bottom-left', 'sidebar'], description: 'Position (default: bottom-right)' },
+            include_api_knowledge: { type: 'boolean', description: 'Include API docs (default: true)' },
+            include_component_knowledge: { type: 'boolean', description: 'Include component structure (default: true)' },
+          },
         },
       },
     ],

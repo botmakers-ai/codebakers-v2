@@ -1,0 +1,1 @@
+{"version":3,"file":"deploy-vercel.d.ts","sourceRoot":"","sources":["../../src/tools/deploy-vercel.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;GAUG;AAMH,UAAU,UAAU;IAClB,UAAU,CAAC,EAAE,OAAO,CAAC;IACrB,QAAQ,CAAC,EAAE,MAAM,CAAC;CACnB;AAED,wBAAsB,YAAY,CAAC,IAAI,GAAE,UAAe,GAAG,OAAO,CAAC,MAAM,CAAC,CAsCzE"}
