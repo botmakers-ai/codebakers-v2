@@ -41,8 +41,28 @@ export async function start(args: {}): Promise<string> {
 
     // Determine current state and provide interactive guidance
     if (!codebakersExists) {
-      // Brand new project
-      return `🍞 **Welcome to CodeBakers!**
+      // Brand new user, first time
+      return `🍞 **Hey! Welcome to CodeBakers, powered by BotMakers.**
+
+I'm your professional coding partner, ready to help you build amazing things!
+
+Here's what makes this different - **you can talk to me like a regular person.** No commands to memorize, no complex setup, just natural conversation.
+
+**I can help you in three ways:**
+
+✨ **Build it FOR you** - Describe your idea, and I'll take it from concept to deployed app (usually ~30 minutes)
+
+🤝 **Build it WITH you** - We'll work together step-by-step. You make the decisions, I handle the technical heavy lifting.
+
+📚 **Teach you while we build** - Want to learn? I'll explain what I'm doing and why, so you understand the whole process.
+
+**The best part?** You don't need to know how to code. Just tell me what you want to create, and I'll guide you from there.
+
+---
+
+**So... what do you want to build today?**
+
+(Just describe it in your own words - like "a recipe app" or "a task manager for my team" - and I'll take care of the rest!)
 
 I'm your AI development partner. Together, we'll build your application from idea to deployed product in 30 minutes.
 
@@ -87,108 +107,72 @@ One command and your app is live on Vercel with Supabase backend.
 _I'll take it from there and guide you through each step._`;
 
     } else if (!specExists) {
-      // .codebakers exists but no spec
-      return `🍞 **CodeBakers Session**
+      // .codebakers exists but no spec - returning user starting fresh project
+      return `🍞 **Welcome back to CodeBakers!**
 
-I see you've started a project, but there's no specification yet.
+I see you're starting a new project. Exciting!
 
-**Let's create your PROJECT-SPEC.md:**
+**Quick reminder:** You can talk to me like a regular person. Just describe what you want to build, and I'll handle everything - from planning to deployment.
 
-**What does this app do?** (Describe your idea in 1-2 sentences)
+---
 
-Examples:
-- "Helps freelancers track time and generate invoices"
-- "Lets teams collaborate on documents in real-time"
-- "Manages inventory for small retail stores"
+**What's your idea for this project?**
 
-Once you tell me, I'll:
-1. Research the domain
-2. Identify all necessary features
-3. Design the database schema
-4. Create a complete specification
+(Describe it in your own words - like "an expense tracker for freelancers" or "a booking system for salons")
 
-**Your idea:**`;
+I'll research your idea, plan out all the features, and we'll get building!`;
+
 
     } else if (specExists && !mockupsExist) {
-      // Have spec, need mockups
+      // Have spec, need mockups - user paused after planning
       const specContent = await fs.readFile(specPath, 'utf-8');
       const projectName = specContent.match(/# (.+)/)?.[1] || 'Your Project';
 
-      return `🍞 **CodeBakers Session: ${projectName}**
+      return `🍞 **Welcome back!** You're building: **${projectName}**
 
-✅ **PROJECT-SPEC.md complete!**
+Great news - your spec is all done! I've mapped out all the features and know exactly what needs to be built.
 
-**Next Step: UI Mockups** 🎨
+**Next up:** I need to see what you want it to look like. The designs help me figure out the perfect database structure and how everything connects.
 
-I need to see what your app looks like before I can build it. This ensures:
-- Database schema matches your UI exactly
-- No missing features
-- No unused tables
-- Perfect dependency mapping
+**Three easy options:**
 
-**You have 3 options:**
+🎨 **Upload designs** - Got Figma mockups? Just drag them into the \`refs/design/\` folder
 
-**Option 1: Upload designs** (Recommended if you have them)
-- Export from Figma as PNG/SVG
-- Place in \`refs/design/\` folder
-- I'll validate quality automatically
+✨ **Let me generate them** - Tell me what screens you're thinking, and I'll create mockups for you
 
-**Option 2: Generate with AI**
-- Tell me: "Generate mockups for [feature]"
-- I'll create professional designs
-- You can refine as needed
-
-**Option 3: Hand-drawn sketches**
-- Take photos of sketches
-- Place in \`refs/design/\`
-- I'll analyze and understand them
+📝 **Sketch it out** - Even hand-drawn sketches work! Take a photo and I'll understand it
 
 ---
 
-**Which option works best for you?**
-
-_(Or if you already have mockups, let me know and I'll validate them)_`;
+**What works best for you?**`;
 
     } else if (mockupsExist && !buildStateExists) {
-      // Have spec + mockups, ready to analyze
-      return `🍞 **CodeBakers Session**
+      // Have spec + mockups, ready to build - everything is set!
+      return `🍞 **Perfect! You're all set to build.**
 
-✅ **PROJECT-SPEC.md complete!**
-✅ **Mockups detected in refs/design/**
+I've got:
+✅ Your complete project spec
+✅ Your design mockups
 
-**Next Step: Mockup Analysis & Build** 🔍
+**Here's what happens next:**
 
-Before I start building, I need to:
+I'm going to analyze your designs and build your entire app. This usually takes 15-30 minutes depending on complexity.
 
-**1. Validate mockup quality** (30 seconds)
-- Check all UI states are covered (loading/error/empty/success)
-- Verify mobile mockups exist
-- Ensure design consistency
+I'll:
+- Extract the database structure from your mockups
+- Build all the features
+- Add authentication & security
+- Create tests
+- Make it mobile-friendly
 
-**2. Deep analysis** (2 minutes)
-- Extract all components
-- Identify all data fields
-- Map relationships and dependencies
-- Generate database schema
-
-**3. Build everything** (15-30 minutes)
-- Complete vertical slices for each feature
-- All tests included
-- Production-ready code
+**And I'll keep you updated the whole time** so you can see the progress!
 
 ---
 
-**Ready to start?**
-
-**Type one of these:**
-1. **"Validate mockups"** - I'll check quality first
-2. **"Start building"** - Skip validation, analyze and build
-3. **"Show me the spec"** - Review PROJECT-SPEC.md first
-
-**What would you like to do?**`;
+**Ready to go?** Just say "start building" (or really, anything - I know what to do! 😊)`;
 
     } else {
-      // Existing project with build state
+      // Existing project with build state - returning user continuing work
       const buildState = await fs.readFile(buildStatePath, 'utf-8');
 
       // Parse current phase
@@ -200,55 +184,39 @@ Before I start building, I need to:
       const completed = completedMatch ? parseInt(completedMatch[1]) : 0;
       const total = completedMatch ? parseInt(completedMatch[2]) : 0;
 
-      const phaseNames = [
-        'Spec Generation',
-        'UI Mockups',
-        'Analysis & Schema',
-        'Foundation Build',
-        'Feature Build',
-        'Testing & Quality',
-        'Deployment'
-      ];
+      // Parse project name
+      const specContent = specExists ? await fs.readFile(specPath, 'utf-8') : '';
+      const projectName = specContent.match(/# (.+)/)?.[1] || 'Your App';
 
-      return `🍞 **CodeBakers Session: Resuming**
+      // Create friendly progress message
+      let progressMsg = '';
+      if (completed === total && total > 0) {
+        progressMsg = `🎉 All ${total} features are complete!`;
+      } else if (completed > 0) {
+        progressMsg = `You've built ${completed} out of ${total} features - great progress!`;
+      } else {
+        progressMsg = `Ready to start building your ${total} features!`;
+      }
 
-**Current Progress:**
+      return `🍞 **Welcome back!** Let's continue working on **${projectName}**.
 
-Phase: ${currentPhase}/6 - ${phaseNames[currentPhase] || 'Unknown'}
-Features Complete: ${completed}/${total}
+${progressMsg}
 
 ---
 
 **What would you like to do?**
 
-**Option 1: Continue building** 🚀
-- Resume where we left off
-- Build remaining features
-- Complete current phase
+**Keep building?** I'll pick up right where we left off and continue with the next features.
 
-**Option 2: Review progress** 📊
-- Show BUILD-STATE.md
-- List completed features
-- Show what's left
+**Add something new?** Tell me what you want to add and I'll update the plan and build it.
 
-**Option 3: Add new features** ✨
-- Expand scope (I'll update spec)
-- Generate new mockups
-- Build additional functionality
+**Ready to deploy?** If everything's done, I can get your app live in a few minutes.
 
-**Option 4: Deploy** ☁️
-- Run final tests
-- Security audit
-- Deploy to production
-
-**Option 5: Start fresh** 🔄
-- Keep existing code
-- Start new feature branch
-- Clean build state
+**Review what's done?** I can show you what we've built and what's left.
 
 ---
 
-**Just tell me what you want to do, and I'll guide you!**`;
+**Just tell me - I'm here to help however you need!** 😊`;
     }
 
   } catch (error) {
