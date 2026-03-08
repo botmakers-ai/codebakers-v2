@@ -3,7 +3,7 @@
 ## What Gets Published
 
 **Package:** `codebakers-mcp-server/` folder
-**Package Name on NPM:** `@codebakers/mcp-server`
+**Package Name on NPM:** `@codebakers/mcp`
 **What's Included:**
 - `dist/` - Compiled JavaScript (MCP server + CLI)
 - `package.json` - Package metadata
@@ -43,7 +43,7 @@ npm whoami
 
 ### 2. Organization Setup (For Scoped Packages)
 
-**Package name:** `@codebakers/mcp-server` (scoped under `@codebakers`)
+**Package name:** `@codebakers/mcp` (scoped under `@codebakers`)
 
 **Option A: Use existing organization**
 If you already own `@codebakers` org on NPM - skip to publishing.
@@ -58,13 +58,13 @@ If you already own `@codebakers` org on NPM - skip to publishing.
 If `codebakers` org isn't available, use unscoped:
 ```json
 {
-  "name": "codebakers-mcp-server"  // Instead of @codebakers/mcp-server
+  "name": "codebakers-mcp"  // Instead of @codebakers/mcp
 }
 ```
 
 Then install command becomes:
 ```bash
-npx codebakers-mcp-server install
+npx codebakers-mcp install
 ```
 
 ---
@@ -98,19 +98,19 @@ npm pack --dry-run
 npm pack
 ```
 
-This creates: `codebakers-mcp-server-5.1.0.tgz`
+This creates: `codebakers-mcp-5.2.0.tgz`
 
 **Test install locally:**
 ```bash
-npm install -g ./codebakers-mcp-server-5.1.0.tgz
-npx @codebakers/mcp-server help
+npm install -g ./codebakers-mcp-5.2.0.tgz
+npx @codebakers/mcp help
 # Should show CLI help
 ```
 
 **Cleanup test:**
 ```bash
-npm uninstall -g @codebakers/mcp-server
-rm codebakers-mcp-server-5.1.0.tgz
+npm uninstall -g @codebakers/mcp
+rm codebakers-mcp-5.2.0.tgz
 ```
 
 ---
@@ -127,11 +127,11 @@ Scoped packages (`@codebakers/...`) default to private. This flag makes it publi
 
 **Expected output:**
 ```
-+ @codebakers/mcp-server@5.1.0
++ @codebakers/mcp@5.2.0
 ```
 
 **Verify on NPM:**
-https://www.npmjs.com/package/@codebakers/mcp-server
+https://www.npmjs.com/package/@codebakers/mcp
 
 ---
 
@@ -139,7 +139,7 @@ https://www.npmjs.com/package/@codebakers/mcp-server
 
 **From anywhere:**
 ```bash
-npx @codebakers/mcp-server install
+npx @codebakers/mcp install
 ```
 
 Should:
@@ -149,8 +149,8 @@ Should:
 
 **Verify it works:**
 ```bash
-npx @codebakers/mcp-server status
-npx @codebakers/mcp-server help
+npx @codebakers/mcp status
+npx @codebakers/mcp help
 ```
 
 ---
@@ -160,7 +160,7 @@ npx @codebakers/mcp-server help
 ### Users Can Now Install With:
 
 ```bash
-npx @codebakers/mcp-server install
+npx @codebakers/mcp install
 ```
 
 **No repository cloning needed. Works from anywhere globally.**
@@ -215,7 +215,7 @@ git push origin main --tags
 
 ### "Package name already exists"
 
-**If `@codebakers/mcp-server` is taken:**
+**If `@codebakers/mcp` is taken:**
 
 Option 1: Use different scoped name
 ```json
@@ -227,13 +227,13 @@ Option 1: Use different scoped name
 Option 2: Use unscoped name
 ```json
 {
-  "name": "codebakers-mcp-server"
+  "name": "codebakers-mcp"
 }
 ```
 
 Check availability:
 ```bash
-npm view @codebakers/mcp-server
+npm view @codebakers/mcp
 # If shows 404: name is available
 # If shows package details: name is taken
 ```
@@ -278,8 +278,8 @@ NPM may require 2FA for publishing.
 ## Package Stats
 
 After publishing, you can track:
-- **Downloads:** https://www.npmjs.com/package/@codebakers/mcp-server
-- **Install stats:** https://npmtrends.com/@codebakers/mcp-server
+- **Downloads:** https://www.npmjs.com/package/@codebakers/mcp
+- **Install stats:** https://npmtrends.com/@codebakers/mcp
 - **GitHub stars:** Link package to GitHub repo in package.json
 
 ---
@@ -318,7 +318,7 @@ npm publish --access public
 
 **Users install with:**
 ```bash
-npx @codebakers/mcp-server install
+npx @codebakers/mcp install
 ```
 
 **To update later:**

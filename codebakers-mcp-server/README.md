@@ -78,7 +78,7 @@ An MCP (Model Context Protocol) server that:
 ### One-Command Installation (Recommended)
 
 ```bash
-npx @codebakers/mcp-server install
+npx @codebakers/mcp install
 ```
 
 That's it! This command will:
@@ -94,9 +94,9 @@ That's it! This command will:
 
 **Other commands:**
 ```bash
-npx @codebakers/mcp-server status      # Check installation
-npx @codebakers/mcp-server uninstall   # Remove
-npx @codebakers/mcp-server help        # Show all commands
+npx @codebakers/mcp status      # Check installation
+npx @codebakers/mcp uninstall   # Remove
+npx @codebakers/mcp help        # Show all commands
 ```
 
 ---

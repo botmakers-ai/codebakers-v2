@@ -1,5 +1,5 @@
 {
-  "name": "@codebakers/mcp-server",
+  "name": "@codebakers/mcp",
   "version": "5.2.0",
   "description": "CodeBakers Method MCP Server - Complete autonomous app builder with quality gates",
   "main": "dist/index.js",

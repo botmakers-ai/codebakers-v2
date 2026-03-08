@@ -5,7 +5,7 @@
 The easiest way to install CodeBakers MCP Server:
 
 ```bash
-npx @codebakers/mcp-server install
+npx @codebakers/mcp install
 ```
 
 That's it! This command will:
@@ -25,28 +25,28 @@ That's it! This command will:
 
 ### Check Installation Status
 ```bash
-npx @codebakers/mcp-server status
+npx @codebakers/mcp status
 ```
 
 Shows whether CodeBakers is installed and displays the current configuration.
 
 ### Uninstall
 ```bash
-npx @codebakers/mcp-server uninstall
+npx @codebakers/mcp uninstall
 ```
 
 Removes CodeBakers MCP Server from Claude Desktop config.
 
 ### Version
 ```bash
-npx @codebakers/mcp-server version
+npx @codebakers/mcp version
 ```
 
 Shows the current version of CodeBakers MCP Server.
 
 ### Help
 ```bash
-npx @codebakers/mcp-server help
+npx @codebakers/mcp help
 ```
 
 Displays all available commands.
@@ -59,7 +59,7 @@ If you prefer to configure manually:
 
 ### 1. Install the package
 ```bash
-npm install -g @codebakers/mcp-server
+npm install -g @codebakers/mcp
 ```
 
 ### 2. Find your Claude Desktop config file
