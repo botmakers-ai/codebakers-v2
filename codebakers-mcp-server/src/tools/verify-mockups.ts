@@ -11,7 +11,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { validateMockups } from './validate-mockups';
+import { validateMockups } from './validate-mockups.js';
 
 export async function verifyMockups(args: { mockup_folder?: string }): Promise<string> {
   const cwd = process.cwd();

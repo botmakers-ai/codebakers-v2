@@ -8,7 +8,7 @@
  *
  * Purpose: Guarantee perfect mockups before database schema generation
  */
-import { validateMockups } from './validate-mockups';
+import { validateMockups } from './validate-mockups.js';
 export async function verifyMockups(args) {
     const cwd = process.cwd();
     const mockupFolder = args.mockup_folder || 'refs/design/';

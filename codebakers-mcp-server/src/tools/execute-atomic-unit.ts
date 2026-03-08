@@ -16,12 +16,12 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { generateMigration } from './generate-migration';
-import { generateApiRoute } from './generate-api-route';
-import { generateStore } from './generate-store';
-import { generateComponent } from './generate-component';
-import { generateUnitTests } from './generate-unit-tests';
-import { generateE2ETests } from './generate-e2e-tests';
+import { generateMigration } from './generate-migration.js';
+import { generateApiRoute } from './generate-api-route.js';
+import { generateStore } from './generate-store.js';
+import { generateComponent } from './generate-component.js';
+import { generateUnitTests } from './generate-unit-tests.js';
+import { generateE2ETests } from './generate-e2e-tests.js';
 
 interface AtomicUnitArgs {
   feature_name: string;

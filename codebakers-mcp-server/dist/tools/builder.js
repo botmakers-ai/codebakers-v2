@@ -8,14 +8,14 @@
  */
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { executeAtomicUnit } from './execute-atomic-unit';
-import { verifyCompleteness } from './verify-completeness';
-import { validateAccessibility } from './validate-accessibility';
-import { optimizePerformance } from './optimize-performance';
-import { scanSecurity } from './scan-security';
-import { deployVercel } from './deploy-vercel';
-import { generateDocs } from './generate-docs';
-import { generateChatbot } from './generate-chatbot';
+import { executeAtomicUnit } from './execute-atomic-unit.js';
+import { verifyCompleteness } from './verify-completeness.js';
+import { validateAccessibility } from './validate-accessibility.js';
+import { optimizePerformance } from './optimize-performance.js';
+import { scanSecurity } from './scan-security.js';
+import { deployVercel } from './deploy-vercel.js';
+import { generateDocs } from './generate-docs.js';
+import { generateChatbot } from './generate-chatbot.js';
 export async function builder(args) {
     const cwd = process.cwd();
     const { mode, stop_on_error = false, skip_quality_gates = false, skip_deploy = false, skip_docs = false, skip_chatbot = false } = args;
