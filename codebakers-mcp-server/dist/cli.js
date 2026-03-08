@@ -126,7 +126,7 @@ async function install() {
         }
         config.mcpServers.codebakers = {
             command: 'npx',
-            args: ['-y', '@codebakers/mcp']
+            args: ['-y', '@codebakers/mcp@latest']
         };
         // 5. Write updated config
         await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
