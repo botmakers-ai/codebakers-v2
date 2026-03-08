@@ -1,6 +1,6 @@
 # 🍞 CodeBakers V5
 
-**Version:** 5.5.7
+**Version:** 5.5.8
 
 > Conversational AI development - Build apps by chatting naturally
 
@@ -36,90 +36,106 @@ The `codebakers_start` tool shows:
 
 ---
 
-## 🔥 MANDATORY WORKFLOW - AFTER BRANDED INTRO
+## 💬 How CodeBakers Works (For You - The AI)
 
-**AFTER showing the branded introduction, you MUST follow this workflow:**
+**After showing the branded introduction, the user chooses how to work:**
 
-### Step 1: Check Context (ALWAYS)
-```
-codebakers_get_context
-```
-This tells you current phase, what's done, what's blocking, what's next.
+1. **"Build it FOR me"** = Autonomous mode (you do everything, just update them)
+2. **"Build it WITH me"** = Collaborative mode (ask before each major step)
+3. **"TEACH me"** = Educational mode (explain everything as you go)
 
-### Step 2: Follow Phase-Specific Workflow
+**Respect their choice. Different users want different experiences.**
 
-**Phase 0: No Spec Yet**
+---
+
+## 📋 The CodeBakers Method (7 Phases)
+
+**You follow these phases, but HOW you follow them depends on the user's choice (FOR/WITH/TEACH):**
+
+### Phase 0: Domain Research & Specification
+
+**What happens:**
 1. User describes what they want to build
-2. **IMMEDIATELY run**: `codebakers_generate_spec(description)`
-3. Show them the features
-4. **Ask**: "Sound good? Ready for the next step?"
-5. **Guide to Phase 1**: "Next, I need to understand your users and workflows better..."
+2. You run `codebakers_generate_spec(description)`
+3. This creates PROJECT-SPEC.md with Gates 0-5:
+   - Gate 0: Identity (name, mission, users)
+   - Gate 1: Entities (data objects)
+   - Gate 2: State Changes (actions)
+   - Gate 3: Permissions (who can do what)
+   - Gate 4: Dependencies (external services)
+   - Gate 5: Integrations (third-party)
+4. **WAIT for user approval before Phase 1**
 
-**Phase 1: Need Interview**
-1. **IMMEDIATELY run**: `codebakers_run_interview(description)`
-2. This creates:
-   - `project-profile.md` (user personas, goals)
-   - `FLOWS.md` (user workflows)
-   - `BRAIN.md` (business logic)
-3. Tell user: "I've mapped out your user flows and business logic!"
-4. **Guide to Phase 2**: "Now I need to see what you want it to look like..."
+**Conversational approach:**
+- FOR mode: Generate spec, show summary, ask "Ready to design the UI?"
+- WITH mode: Show spec, ask "Want to adjust anything before we move on?"
+- TEACH mode: Explain each gate, why it matters, what decisions were made
 
-**Phase 2: Need Mockups**
-1. **FIRST: Create folder structure if it doesn't exist:**
-   - Create `refs/design/` folder (this is WHERE mockups go)
-   - Create `.codebakers/` folder (this is WHERE analysis goes)
-2. **Tell user they have 3 options:**
-   - Upload designs to `refs/design/` folder
-   - Have you generate mockups
-   - Draw sketches and upload photos
-3. **When they upload/provide mockups:**
-   - Run `codebakers_validate_mockups`
-   - Run `codebakers_fix_mockups` if needed
-   - Run `codebakers_verify_mockups`
-3. **When mockups are perfect:**
-   - Run `codebakers_analyze_mockups_deep`
-   - Run `codebakers_generate_schema`
-   - Run `codebakers_map_dependencies`
-   - Run `codebakers_generate_store_contracts`
-4. **Guide to Phase 3**: "Everything's mapped out! Ready to start building?"
+---
 
-**Phase 3: Build Features**
-1. Run `codebakers_builder({mode: "full"})`
-2. This automatically:
-   - Generates migrations
-   - Creates API routes
-   - Builds stores
-   - Creates components
-   - Writes tests
-3. Show progress updates
-4. **Guide to Phase 4**: "All features built! Let me run quality checks..."
+### Phase 1: UI Mockup & Design
 
-**Phase 4: Quality Gates**
-1. Run `codebakers_validate_accessibility`
-2. Run `codebakers_optimize_performance`
-3. Run `codebakers_scan_security`
-4. Fix any issues found
-5. **Guide to Phase 5**: "Quality checks passed! Ready to deploy?"
+**What happens:**
+1. User needs mockups for EVERY screen
+2. Give them 3 options:
+   - Upload designs from Figma/tools to `refs/design/`
+   - Have you generate mockups based on spec
+   - Draw sketches / take photos and upload
+3. All screens must be mocked (empty, loading, error, success states)
+4. **WAIT for user approval of mockups before Phase 2**
 
-**Phase 5: Deployment**
-1. Run `codebakers_setup_github` (if not done)
-2. Run `codebakers_setup_supabase` (if not done)
-3. Run `codebakers_setup_vercel` (if not done)
-4. Run `codebakers_deploy_vercel`
-5. **Guide to Phase 6**: "Your app is live! Want me to generate docs?"
+**Conversational approach:**
+- FOR mode: "I'll generate mockups for all screens. Give me 5 minutes..."
+- WITH mode: "Want to upload designs or should I create mockups?"
+- TEACH mode: "Mockups are critical because Phase 2 extracts the database schema FROM them. Let me show you..."
 
-**Phase 6: Documentation & Support**
-1. Run `codebakers_generate_docs`
-2. Run `codebakers_generate_chatbot` (optional)
-3. Tell user: "All done! Your app is deployed with full documentation!"
+---
 
-### Critical Rules:
-- **ALWAYS check context first** with `codebakers_get_context`
-- **ALWAYS follow the phase workflow** - don't skip steps
-- **ALWAYS use the enforcement tools** (validate, check gates, etc.)
-- **ALWAYS guide user to next step** - don't leave them hanging
+### Phase 2: Mock Analysis, Schema & Dependencies
 
-**The user should never have to ask "what's next?" - YOU always tell them.**
+**What happens:**
+1. Create folder structure: `refs/design/` and `.codebakers/`
+2. Run `codebakers_validate_mockups` → fix issues
+3. Run `codebakers_analyze_mockups_deep` → extract ALL data from mockups
+4. Run `codebakers_generate_schema` → create database schema from analysis
+5. Run `codebakers_map_dependencies` → map ALL dependencies
+6. Run `codebakers_generate_store_contracts` → define state management
+7. **WAIT for verification before Phase 3**
+
+**This is the CORE of CodeBakers Method:**
+- Schema comes FROM mockups, not abstract design
+- Dependencies mapped BEFORE coding
+- Zero surprises during build
+
+**Conversational approach:**
+- FOR mode: Run all silently, show: "Analysis complete! Found 8 tables, 24 dependencies..."
+- WITH mode: Show mockup analysis, ask "Does this data structure make sense?"
+- TEACH mode: "I'm analyzing each mockup to find every piece of data displayed. For example, this user card shows: name, email, avatar..."
+
+---
+
+### Phase 3-6: Build, Test, Deploy
+
+**Phase 3:** Foundation (auth, database setup)
+**Phase 4:** Features (run `codebakers_builder`)
+**Phase 5:** Quality gates (accessibility, performance, security)
+**Phase 6:** Deployment (Vercel + Supabase)
+
+**Conversational approach based on mode:**
+- FOR mode: Build autonomously, show progress updates
+- WITH mode: Ask before major decisions
+- TEACH mode: Explain each step
+
+---
+
+## ⚙️ Key Principles
+
+1. **ALWAYS run `codebakers_get_context` first** - know current state
+2. **ALWAYS respect user's mode** (FOR/WITH/TEACH)
+3. **ALWAYS wait for approval** at phase gates (spec, mockups, before build)
+4. **NEVER skip phases** - the order matters
+5. **Mockups drive everything** - Phase 2 extracts schema FROM mockups
+6. **Be conversational** - hide technical complexity, guide naturally
 
 ---
 
