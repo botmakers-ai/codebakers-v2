@@ -54,6 +54,8 @@ import { setupSupabase } from './tools/setup-supabase.js';
 import { setupVercel } from './tools/setup-vercel.js';
 // v5.4.0 New Tools - Context-Aware Consulting
 import { consult } from './tools/consult.js';
+// v5.4.3 New Tools - Interactive Onboarding
+import { start } from './tools/start.js';
 const server = new Server({
     name: 'codebakers',
     version: '5.4.0',
@@ -70,6 +72,7 @@ const tools = {
     // Context & Session Management
     codebakers_get_context: getContext,
     codebakers_init_session: initSession,
+    codebakers_start: start,
     // Phase 0: Spec Generation
     codebakers_generate_spec: generateSpec,
     // Phase 1: Interview
@@ -136,6 +139,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             {
                 name: 'codebakers_init_session',
                 description: 'Initialize AI session with BUILD-STATE.md, PROJECT-SPEC.md, and phase-specific context',
+                inputSchema: {
+                    type: 'object',
+                    properties: {},
+                },
+            },
+            {
+                name: 'codebakers_start',
+                description: 'Start interactive CodeBakers session with step-by-step guidance (use this when user first opens Claude Desktop or seems unsure what to do)',
                 inputSchema: {
                     type: 'object',
                     properties: {},

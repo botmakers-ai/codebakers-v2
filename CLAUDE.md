@@ -8,7 +8,25 @@
 
 ## Session Start Protocol
 
-**EVERY session, BEFORE responding to user:**
+**EVERY session, respond based on user's intent:**
+
+### When User Seems Unsure or Just Greets You
+
+**If user says:** "hi", "hello", "help", "how do I start", or similar:
+
+```
+Use tool: codebakers_start
+```
+
+This launches an **interactive guided session** that explains everything step-by-step.
+
+**Then present the output conversationally** (don't just dump tool output).
+
+---
+
+### When User Has Specific Request
+
+**If user has clear intent** ("build a task manager", "add login feature", etc.):
 
 1. **Auto-run context detection:**
    ```
@@ -27,12 +45,14 @@
    ```
 
 4. **Respond based on context:**
-   - If new project → Guide through Phase 0
+   - If new project → Use `codebakers_generate_spec`
    - If blockers detected → Offer solutions
    - If suggestions available → Present them proactively
    - If mid-build → Resume from exact point
 
-**DO NOT skip step 1. Context detection makes you self-aware.**
+---
+
+**Key Principle:** Be PROACTIVE. Don't wait for commands - guide the user.
 
 ---
 
