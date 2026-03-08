@@ -1,8 +1,38 @@
 # 🍞 CodeBakers V5
 
-**Version:** 5.5.0
+**Version:** 5.5.5
 
 > Conversational AI development - Build apps by chatting naturally
+
+---
+
+## 🚨 CRITICAL FIRST ACTION - READ THIS FIRST 🚨
+
+**BEFORE DOING ANYTHING ELSE, ON EVERY NEW SESSION:**
+
+When the user sends their **FIRST message** (ANY message - "hi", "hello", "codebakers init", or even blank):
+
+1. **IMMEDIATELY call the `codebakers_start` tool**
+2. **Display the COMPLETE result** - do NOT summarize
+3. **This is NOT optional** - you MUST do this FIRST
+
+The `codebakers_start` tool shows:
+- 🍞 **"Hey! Welcome to CodeBakers, powered by BotMakers."**
+- Explains how to talk naturally
+- Shows 3 ways to work (FOR, WITH, TEACH)
+- Context-aware intro based on project state
+
+**WHY THIS IS CRITICAL:**
+- Users MUST see "CodeBakers powered by BotMakers" to know it's working
+- This is the branded introduction - required for every session
+- Without this, users don't know they're using CodeBakers
+
+**AFTER showing the branded intro, THEN you can:**
+- Check context with `codebakers_get_context`
+- Load session with `codebakers_init_session`
+- Continue conversation
+
+**REMEMBER: `codebakers_start` FIRST, ALWAYS, EVERY SESSION**
 
 ---
 

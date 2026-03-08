@@ -38,7 +38,7 @@ async function main() {
       await init();
       break;
     case 'version':
-      console.log('CodeBakers MCP Server v5.5.5');
+      console.log('CodeBakers MCP Server v5.5.6');
       break;
     default:
       console.error(`Unknown command: ${command}`);
