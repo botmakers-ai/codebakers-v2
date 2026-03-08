@@ -1,0 +1,1 @@
+{"version":3,"file":"setup-vercel.d.ts","sourceRoot":"","sources":["../../src/tools/setup-vercel.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;GAcG;AAQH,UAAU,eAAe;IACvB,IAAI,CAAC,EAAE,MAAM,GAAG,MAAM,CAAC;IACvB,YAAY,CAAC,EAAE,MAAM,CAAC;IACtB,iBAAiB,CAAC,EAAE,MAAM,CAAC;CAC5B;AAoBD,wBAAsB,WAAW,CAAC,IAAI,GAAE,eAAoB,GAAG,OAAO,CAAC,MAAM,CAAC,CA+B7E"}

@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * CodeBakers MCP Server v5.0.0
+ * CodeBakers MCP Server v5.3.0
  *
  * Complete implementation of the CodeBakers Method:
  * - 7-phase development workflow
  * - Comprehensive dependency mapping
  * - Self-aware proactive guidance
  * - Technical enforcement via MCP
+ * - OAuth integration (GitHub, Supabase, Vercel)
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -44,7 +45,7 @@ import { generateE2ETests } from './tools/generate-e2e-tests.js';
 import { runTests } from './tools/run-tests.js';
 import { executeAtomicUnit } from './tools/execute-atomic-unit.js';
 import { verifyCompleteness } from './tools/verify-completeness.js';
-import { autonomousBuild } from './tools/autonomous-build.js';
+import { builder } from './tools/builder.js';
 
 // v5.2.0 New Tools - Quality Gates & Production
 import { validateAccessibility } from './tools/validate-accessibility.js';
@@ -55,10 +56,15 @@ import { diagnoseError } from './tools/diagnose-error.js';
 import { generateDocs } from './tools/generate-docs.js';
 import { generateChatbot } from './tools/generate-chatbot.js';
 
+// v5.3.0 New Tools - OAuth Setup
+import { setupGitHub } from './tools/setup-github.js';
+import { setupSupabase } from './tools/setup-supabase.js';
+import { setupVercel } from './tools/setup-vercel.js';
+
 const server = new Server(
   {
     name: 'codebakers',
-    version: '5.2.0',
+    version: '5.3.0',
   },
   {
     capabilities: {
@@ -110,7 +116,7 @@ const tools = {
   // Orchestration
   codebakers_execute_atomic_unit: executeAtomicUnit,
   codebakers_verify_completeness: verifyCompleteness,
-  codebakers_autonomous_build: autonomousBuild,
+  codebakers_builder: builder,
 
   // Feature Building
   codebakers_enforce_feature: enforceFeature,
@@ -129,6 +135,11 @@ const tools = {
   // v5.2.0: Production Features
   codebakers_generate_docs: generateDocs,
   codebakers_generate_chatbot: generateChatbot,
+
+  // v5.3.0: OAuth Setup
+  codebakers_setup_github: setupGitHub,
+  codebakers_setup_supabase: setupSupabase,
+  codebakers_setup_vercel: setupVercel,
 };
 
 /**
@@ -407,7 +418,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
-        name: 'codebakers_autonomous_build',
+        name: 'codebakers_builder',
         description: 'Build entire application autonomously from FLOWS.md with automatic quality gates',
         inputSchema: {
           type: 'object',
@@ -501,6 +512,48 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      // v5.3.0: OAuth Setup
+      {
+        name: 'codebakers_setup_github',
+        description: 'Setup GitHub repository with OAuth - create new or link existing repo',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', enum: ['existing', 'create', 'skip'], description: 'Setup mode' },
+            repo_name: { type: 'string', description: 'Repository name (for create mode)' },
+            repo_url: { type: 'string', description: 'Repository URL (for existing mode)' },
+            is_private: { type: 'boolean', description: 'Private repository (default: true)' },
+          },
+        },
+      },
+      {
+        name: 'codebakers_setup_supabase',
+        description: 'Setup Supabase project with OAuth - create new or configure existing',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', enum: ['existing', 'create', 'skip'], description: 'Setup mode' },
+            project_name: { type: 'string', description: 'Project name (for create mode)' },
+            region: { type: 'string', description: 'Region (default: us-east-1)' },
+            supabase_url: { type: 'string', description: 'Project URL (for existing mode)' },
+            supabase_anon_key: { type: 'string', description: 'Anon key (for existing mode)' },
+            supabase_service_key: { type: 'string', description: 'Service role key (optional)' },
+            database_url: { type: 'string', description: 'Database URL (optional)' },
+          },
+        },
+      },
+      {
+        name: 'codebakers_setup_vercel',
+        description: 'Setup Vercel deployment with OAuth - link project for deployment',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', enum: ['link', 'skip'], description: 'Setup mode' },
+            project_name: { type: 'string', description: 'Project name (optional)' },
+            production_branch: { type: 'string', description: 'Production branch (default: main)' },
+          },
+        },
+      },
     ],
   };
 });
@@ -549,7 +602,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error('🍞 CodeBakers MCP Server v5.0.0 started');
+  console.error('🍞 CodeBakers MCP Server v5.3.0 started');
 }
 
 main().catch((error) => {

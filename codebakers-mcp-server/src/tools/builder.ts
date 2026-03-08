@@ -1,5 +1,5 @@
 /**
- * codebakers_autonomous_build
+ * codebakers_builder
  *
  * Full Autonomous Build Orchestrator
  *
@@ -27,7 +27,7 @@ interface BuildArgs {
   skip_chatbot?: boolean; // Skip chatbot (default: false)
 }
 
-export async function autonomousBuild(args: BuildArgs): Promise<string> {
+export async function builder(args: BuildArgs): Promise<string> {
   const cwd = process.cwd();
   const {
     mode,
