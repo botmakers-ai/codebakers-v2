@@ -1,0 +1,20 @@
+# Source files (users only need compiled dist/)
+src/
+tsconfig.json
+
+# Development files
+*.log
+*.tgz
+.DS_Store
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts (keep dist/)
+node_modules/
+
+# Documentation for development only
+*.md.backup

@@ -7,6 +7,12 @@
   "bin": {
     "codebakers": "./dist/cli.js"
   },
+  "files": [
+    "dist/",
+    "README.md",
+    "INSTALL.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
@@ -20,6 +26,15 @@
     "claude",
     "software-development"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/botmakers-ai/codebakers-v2.git",
+    "directory": "codebakers-mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/botmakers-ai/codebakers-v2/issues"
+  },
+  "homepage": "https://github.com/botmakers-ai/codebakers-v2#readme",
   "author": "BotMakers Inc.",
   "license": "MIT",
   "dependencies": {
